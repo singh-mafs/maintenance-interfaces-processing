@@ -1,4 +1,4 @@
-package com.mikealbert.processing.vehicle_schedules;
+package com.mikealbert.processing.maintenance_interfaces;
 
 import org.apache.camel.spring.Main;
 import org.springframework.beans.factory.BeanDefinitionStoreException;

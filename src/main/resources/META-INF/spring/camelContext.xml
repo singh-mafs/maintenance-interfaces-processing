@@ -43,7 +43,7 @@
 		 <context:component-scan base-package="com.mikealbert" />
 		 
 		 <camel:camelContext id="camel-server">
-		   <camel:package>com.mikealbert.processing.vehicle_schedules.routes</camel:package>
+		   <camel:package>com.mikealbert.processing.maintenance_interfaces.routes</camel:package>
 		   <!-- enable JMX connector so we can connect to the server and browse mbeans -->
 		   <!-- Camel will log at INFO level the service URI to use for connecting with jconsole -->
 		   <camel:jmxAgent id="agent" createConnector="true"/>
@@ -52,18 +52,16 @@
 		 <!-- AspectJ annotation -->
 		<aop:aspectj-autoproxy />  
 		
-		
-		
 		<bean id="bridgePropertyPlaceholder"
 			class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
 				<property name="locations">
 					<list>
-						<value>file:///${vehicle-schedules_config}/application.properties</value>
+						<value>file:///${maintenance-interfaces_config}/application.properties</value>
 					</list>
 				</property>
 		</bean>
 	
-  	<broker:queue id="schedulesProcessedQueue" physicalName="queue.schedulesProcessed" />  	
+  	<!--<broker:queue id="schedulesProcessedQueue" physicalName="queue.schedulesProcessed" />-->	
   
   <!-- lets configure the ActiveMQ JMS broker -->
   	<broker:broker id="broker" useJmx="true" persistent="false">
@@ -233,7 +231,7 @@
 	   <property name="targetMethod" value="initLogging" />
 	   <property name="arguments">
 	      <list>
-	         <value>file:///${vehicle-schedules_config}/log4j.properties</value>
+	         <value>file:///${maintenance-interfaces_config}/log4j.properties</value>
 	      </list>
 	   </property>
 	</bean>
