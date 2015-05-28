@@ -1,7 +1,6 @@
 package com.mikealbert.batch.mappers;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
 
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldSet;
@@ -16,7 +15,6 @@ public class PepboysHeaderFieldSetMapper implements FieldSetMapper<VendorInvoice
 	@Override
 	public VendorInvoiceHeaderVO mapFieldSet(FieldSet fieldSet) throws BindException {
 		VendorInvoiceHeaderVO vendorInvoiceHeader = new VendorInvoiceHeaderVO();
-		List<VendorInvoiceDetailsVO> details = new ArrayList<VendorInvoiceDetailsVO>();
 		
 		// set the record type to (H)eader
 		// Pepboys Header records will always be denoted with our standard letter "H"
@@ -34,17 +32,18 @@ public class PepboysHeaderFieldSetMapper implements FieldSetMapper<VendorInvoice
 		vendorInvoiceHeader.setStoreNbr(fieldSet.readString("storeNbr"));
 		vendorInvoiceHeader.setPlateNo(fieldSet.readString("plateNo"));
 		
-		// setting up the tax line
-		VendorInvoiceDetailsVO taxDetail = new VendorInvoiceDetailsVO();
-		taxDetail.setRecordType("D");
-		taxDetail.setQty("0.00");
-		taxDetail.setUnitCost("0.00");
-		taxDetail.setExciseTax("0.00");
-		taxDetail.setDiscRebateAmt("0.00");
-		taxDetail.setTaxAmount(MALUtilities.parseDecimalNumberAndRound(fieldSet.readString("salesTaxAmount"), 2));
-		details.add(taxDetail);
-		
-		vendorInvoiceHeader.setDetails(details);
+		if(!MALUtilities.stringMatchesBigDecimal(MALUtilities.parseDecimalNumberAndRound(fieldSet.readString("salesTaxAmount"), 2), new BigDecimal("0.00"))){
+			// setting up the tax line
+			VendorInvoiceDetailsVO taxDetail = new VendorInvoiceDetailsVO();
+			taxDetail.setRecordType("D");
+			taxDetail.setQty("0.00");
+			taxDetail.setUnitCost("0.00");
+			taxDetail.setExciseTax("0.00");
+			taxDetail.setDiscRebateAmt("0.00");
+			taxDetail.setTaxAmount(MALUtilities.parseDecimalNumberAndRound(fieldSet.readString("salesTaxAmount"), 2));
+			
+			vendorInvoiceHeader.addDetail(taxDetail);			
+		}
 		
 		return vendorInvoiceHeader;
 	}

@@ -81,7 +81,7 @@
 		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
 		<property name="strict" value="false" />
 		<property name="names" value="recordType,unitNo,vin,poNbr,storeNbr,docNumber,driver,plannedDate,docDate,mileage,plateNo,salesTaxAmount" />
-		<property name="columns" value="1-1,383-397,220-236,200-219,187-190,16-26,256-285,27-34,35-42,249-255,237-246,60-68,69-77,69-77" />
+		<property name="columns" value="1-1,383-397,220-236,200-219,187-190,16-26,256-285,27-34,35-42,249-255,237-246,69-77" />
 	</bean>
 
 	<bean id="pepBoysDetailRecordTokenizer"
