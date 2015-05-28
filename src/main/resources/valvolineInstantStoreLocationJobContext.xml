@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+
+    <!-- Job Definition -->
+	<batch:job id="valvolineInstantStoreLocationJob" incrementer="jobRunIncrementer"
+	        job-repository="jobRepository">	   
+		<batch:step id="loadValvolineInstantStoreLocationVO">
+			<batch:tasklet>
+				<batch:chunk reader="valvolineInstantStoreLocationReader" processor="storeLocationValidatingOpCodeProcessor" writer="storeLocationWriter" skip-limit="2000000" commit-interval="1">
+					<batch:streams>
+						<batch:stream ref="valvolineInstantStoreLineReader" />
+					</batch:streams>
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>						
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>			        
+				</batch:chunk>
+			</batch:tasklet>
+			<batch:listeners>
+				<batch:listener ref="storeValidationExceptionListener"/>
+				<batch:listener ref="execListenerCtxInjector" />
+			</batch:listeners>			
+		</batch:step>	
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>								
+	</batch:job>
+	
+	<!-- Readers -->	
+	<bean id="valvolineInstantStoreLocationReader"
+	        class="com.mikealbert.batch.readers.FixedCountMultiLineItemReader" scope="step">
+		<property name="delegate" ref="valvolineInstantStoreLineReader"/>
+		<property name="lineCount" value="6"/>      
+	</bean>
+	
+   	<bean id="valvolineInstantStoreLineReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+	    <property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="linesToSkip" value="1" />
+	    <property name="strict" value="false" />
+	    <property name="lineMapper">
+	        <bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+	            <property name="lineTokenizer">
+	                <bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+	                	<property name="names" value="Store #,Store Name,Address,City,State,Zip Code,Store Phone,Store Hours Parameter,Time"/>              	                    	                    	                    
+	                </bean>
+	            </property>
+	            <property name="fieldSetMapper">
+	                <bean id="valvolineInstantStoreMapper" class="com.mikealbert.batch.mappers.ValvolineInstantStoreLocationFieldSetMapper" />
+	            </property>	                    
+	        </bean>
+	    </property> 
+    </bean>
+	
+</beans>

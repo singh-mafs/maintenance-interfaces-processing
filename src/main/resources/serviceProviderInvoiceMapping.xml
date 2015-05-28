@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beanio xmlns="http://www.beanio.org/2012/03"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.beanio.org/2012/03 http://www.beanio.org/2012/03/mapping.xsd">
+  <stream name="serviceProviderInvoice" format="csv">
+  	<group name="vendorInvoiceGroup" class="com.mikealbert.data.entity.ServiceProviderInvoiceHeader">
+  		<record name="H" minOccurs="1" maxOccurs="1" order="1">
+  			<field name="recordType" rid="true" literal="H" required="true"  trim="true" />
+  			<field name="recordId" required="true"  trim="true" />
+  			<field name="vin" required="true"  trim="true" />
+			<field name="unitNo" required="false"  trim="true" />
+			<field name="jobNo" required="false"  trim="true" />
+			<field name="parentProviderNumber" required="false"  trim="true" />
+			<field name="serviceProviderNumber" required="false"  trim="true" />
+			<field name="plannedStart" type="date" format="MM/dd/yyyy" required="false"  trim="true" />
+			<field name="mileage" required="false"  trim="true" />
+			<field name="docType" required="false"  trim="true" />
+			<field name="docNo" required="false"  trim="true" />
+			<field name="docDate" type="date" format="MM/dd/yyyy" required="false"  trim="true" />
+			<field name="origDocNo" required="false"  trim="true" />
+			<field name="regNo" required="false"  trim="true" />
+			<field name="driver" required="false"  trim="true" />
+			<field name="validateInd" required="false"  trim="true" />
+			<field name="vendorRef" required="false"  trim="true" />
+			<field name="lineCount" required="false"  trim="true" />
+   		</record>
+		<record name="D" getter="getDetails" setter="setDetails" class="com.mikealbert.data.entity.ServiceProviderInvoiceDetail" 
+		  collection="list" minOccurs="1" maxOccurs="10000" order="2">
+		    <field name="recordType" rid="true" literal="D" required="true"  trim="true" />
+		    <segment name="id" class="com.mikealbert.data.entity.ServiceProviderInvoiceDetailPK">
+		        <field name="recordId" />
+		    </segment>
+		  	<field name="vendorCode" required="false" trim="true" />
+		  	<field name="quantity" required="false" trim="true" />
+		  	<field name="unitCost" required="false" trim="true" />
+		  	<field name="totalCost" required="false" trim="true" />
+		  	<field name="taxAmount" required="false" trim="true" />
+		  	<field name="exciseTax" required="false" trim="true" />
+		  	<field name="discRbAmt" required="false" trim="true" />
+		  	<field name="lineType" required="false" trim="true" />
+		  	<field name="description" required="false" trim="true" />
+		  	<field name="filler1" ignore="true" />
+		  	<field name="filler2" ignore="true" />
+		  	<field name="filler3" ignore="true" />
+		  	<field name="filler4" ignore="true" />
+		  	<field name="filler5" ignore="true" />
+		  	<field name="filler6" ignore="true" />
+		  	<field name="filler7" ignore="true" />
+		</record>
+  	</group>
+  </stream>
+</beanio>
+

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        ">
+
+	<!-- ======= Property Configurers ======= -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	  <property name="location" value="file:///${maintenance-interfaces_config}/email.properties" />
+	  <property name="placeholderPrefix" value="$email{" />
+	</bean>	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	  <property name="location" value="classpath:velocity.properties" />
+	  <property name="placeholderPrefix" value="$vel{" />
+	</bean>	
+
+	<!-- ======= Velocity Engine ======= -->	
+	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+	    <property name="velocityProperties">
+	        <props>
+	            <prop key="resource.loader">class</prop>
+	            <prop key="class.resource.loader.class">
+	                org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+	            </prop>
+	        </props>
+	    </property>
+	</bean>
+	
+	<!-- ======= Mail Sender Beans ======= -->	
+	<bean id="javaMailSenderSimple" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="$email{email.host}" />
+	</bean>
+	
+	<bean id="emailService" class="com.mikealbert.service.util.email.EmailServiceSpringImpl">
+		<property name="mailSender" ref="javaMailSenderSimple" />
+	</bean>
+
+	<bean id="from" class="com.mikealbert.service.util.email.EmailAddress">
+		<property name="address" value="$email{email.from.address}" />	
+	</bean>		
+	
+	<bean id="bodyHelper" class="com.mikealbert.service.util.VelocityTemplateHelper">
+		<property name="velocityEngine" ref="velocityEngine" />
+		<property name="templatePath" value="$vel{interface-success-email.resource.body.path}" />
+	</bean>
+	
+	<bean id="comdataBodyHelper" class="com.mikealbert.data.util.ComdataVelocityTemplateHelper">
+	    <property name="velocityEngine" ref="velocityEngine"/>
+	    <property name="comdataTemplatePath" value="$vel{comdata-success-email.resource.body.path}" />
+	</bean>
+
+	<bean id="interfaceSuccessEmail" class="com.mikealbert.service.util.email.Email" >
+		<property name="from" ref="from" />
+		<property name="simpleTo" value="$email{email.to.address}" />
+		<property name="subject" value="MVI Loading Data - Success" />
+		<property name="htmlFmt" value="false" />
+	</bean>
+	
+	<bean id="comdataSuccessEmail" class="com.mikealbert.service.util.email.Email" >
+		<property name="from" ref="from" />
+		<property name="simpleTo" value="$email{email.to.address}" />
+		<property name="subject" value="Comdata Loading Data - Success" />
+		<property name="htmlFmt" value="false" />
+	</bean>
+</beans>

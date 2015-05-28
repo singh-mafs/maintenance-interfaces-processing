@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	         
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+    <!-- Job Definition -->
+	<batch:job id="storeLocationJob" incrementer="jobRunIncrementer"
+	        job-repository="jobRepository">	   
+		<batch:step id="loadStoreLocationVO">
+			<batch:tasklet>
+				<batch:chunk reader="storeLocationReader" processor="storeLocationValidator" writer="storeLocationWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>			        
+				</batch:chunk>
+			</batch:tasklet>		
+		</batch:step>						
+	</batch:job>
+	
+	<!-- Readers -->		
+	<bean id="storeLocationReader" class="org.beanio.spring.BeanIOFlatFileItemReader" scope="step">
+	    <property name="streamMapping" value="classpath:/storeLocationMapping.xml" />
+	    <property name="streamName" value="storeLocationIdealFile" />
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	</bean>
+	
+	<!-- Writers -->	
+	<bean id="storeLocationWriter" class="com.mikealbert.batch.writers.StoreLocationWriterMock"/>
+		
+	<!-- Validation Processors -->
+	<bean id="storeLocationValidator" class="org.springframework.batch.item.validator.ValidatingItemProcessor" >
+	    <property name="filter" value="false" />
+	    <property name="validator">
+	        <bean class="com.mikealbert.batch.validators.StoreLocationValidator" />
+	    </property>	
+	</bean>			
+	  		
+</beans>
+

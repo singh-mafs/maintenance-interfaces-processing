@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beanio xmlns="http://www.beanio.org/2012/03" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.beanio.org/2012/03 http://www.beanio.org/2012/03/mapping.xsd">
+  <stream name="vendorInvoiceIdealFile" format="csv">
+  	<group name="vendorInvoiceGroup" class="com.mikealbert.data.vo.VendorInvoiceHeaderVO">
+  		<record name="H" minOccurs="1" maxOccurs="1" order="1">
+  			<field name="recordType" rid="true" literal="H" required="true"  trim="true" />
+			<field name="unitNo" required="false"  trim="true" />
+			<field name="vin" required="false"  trim="true" />
+			<field name="poNbr" required="false"  trim="true" />
+			<field name="storeNbr" required="false"  trim="true" />
+			<field name="docType" required="false"  trim="true" />
+			<field name="docNumber" required="false"  trim="true" />
+			<field name="driver" required="false"  trim="true" />
+			<field name="vendorRef" required="false"  trim="true" />
+			<field name="plannedDate" required="false"  trim="true" />
+			<field name="mileage" required="false"  trim="true" />
+			<field name="plateNo" required="false"  trim="true" />
+			<field name="origDocNo" required="false"  trim="true" />
+   		</record>
+		<record name="D" getter="getDetails" setter="setDetails" class="com.mikealbert.data.vo.VendorInvoiceDetailsVO" 
+		  collection="list" minOccurs="1" maxOccurs="unbounded" order="2">
+		  	<field name="recordType" rid="true" literal="D" required="true"  trim="true" />
+		  	<field name="partServiceCode" required="false" trim="true" />
+		  	<field name="partServiceDesc" required="false" trim="true" />
+		  	<field name="qty" required="false" trim="true" />
+		  	<field name="unitCost" required="false" trim="true" />
+		  	<field name="taxAmount" required="false" trim="true" />
+		  	<field name="exciseTax" required="false" trim="true" />
+		  	<field name="discRebateAmt" required="false" trim="true" />
+		  	<field name="totalCost" required="false" minOccurs="0" trim="true" />
+		</record>
+		<record name="E" getter="getErrors" setter="setErrors" class="com.mikealbert.data.vo.VendorInvoiceErrorsVO" 
+		  collection="list" minOccurs="0" maxOccurs="unbounded" order="3">
+		  	<field name="recordType" rid="true" literal="E" required="true"  trim="true" />
+		  	<field name="errorFieldName" required="true" trim="true" />
+		  	<field name="errorDesc" required="true" trim="true" />
+		</record>
+  	</group>
+  </stream>
+</beanio>
+

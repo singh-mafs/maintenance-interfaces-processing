@@ -1,113 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
        xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:cache="http://www.springframework.org/schema/cache"
        xmlns:sec="http://www.springframework.org/schema/security"
-       xmlns:camel="http://camel.apache.org/schema/spring"
-       xmlns:broker="http://activemq.apache.org/schema/core"
-       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:batch="http://www.springframework.org/schema/batch"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-         http://www.springframework.org/schema/beans
-         http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/aop
-         http://www.springframework.org/schema/aop/spring-aop.xsd
-         http://www.springframework.org/schema/tx
-         http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
-         http://www.springframework.org/schema/jdbc
-         http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
-         http://www.springframework.org/schema/context
-         http://www.springframework.org/schema/context/spring-context-3.1.xsd
-         http://www.springframework.org/schema/data/jpa 
-         http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
-         http://www.springframework.org/schema/cache 
-         http://www.springframework.org/schema/cache/spring-cache.xsd
-         http://www.springframework.org/schema/security 
-         http://www.springframework.org/schema/security/spring-security-3.1.xsd        
-         http://camel.apache.org/schema/spring 
-         http://camel.apache.org/schema/spring/camel-spring.xsd
-         http://activemq.apache.org/schema/core 
-         http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd
-         http://www.springframework.org/schema/jee 
-         http://www.springframework.org/schema/jee/spring-jee.xsd
-         ">
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+            http://www.springframework.org/schema/jdbc
+            http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-3.1.xsd
+            http://www.springframework.org/schema/data/jpa 
+            http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+            http://www.springframework.org/schema/cache 
+            http://www.springframework.org/schema/cache/spring-cache.xsd
+            http://www.springframework.org/schema/security 
+            http://www.springframework.org/schema/security/spring-security-3.1.xsd
+            http://www.springframework.org/schema/batch
+            http://www.springframework.org/schema/batch/spring-batch.xsd  
+            ">
 
-		 <!-- let Spring do its IoC stuff in this package -->
-		 <context:component-scan base-package="com.mikealbert" />
-		 
-		 <camel:camelContext id="camel-server">
-		   <camel:package>com.mikealbert.processing.routes</camel:package>
-		   <!-- enable JMX connector so we can connect to the server and browse mbeans -->
-		   <!-- Camel will log at INFO level the service URI to use for connecting with jconsole -->
-		   <camel:jmxAgent id="agent" createConnector="true"/>
-		 </camel:camelContext>
-		 
-		 <!-- AspectJ annotation -->
-		<aop:aspectj-autoproxy />  
-		
-		<bean id="bridgePropertyPlaceholder"
-			class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
-				<property name="locations">
-					<list>
-						<value>file:///${maintenance-interfaces_config}/application.properties</value>
-					</list>
-				</property>
-		</bean>
-	
-  	<!--<broker:queue id="schedulesProcessedQueue" physicalName="queue.schedulesProcessed" />-->	
-  
-  <!-- lets configure the ActiveMQ JMS broker -->
-  	<broker:broker id="broker" useJmx="true" persistent="false">
-		<broker:systemUsage>
-	  		<broker:systemUsage>
-	  		  	<broker:memoryUsage>
-	  				<broker:memoryUsage limit="64 mb"/>
-	  			</broker:memoryUsage>
-	  		  	<broker:storeUsage>
-	  				<broker:storeUsage limit="2 gb"/>
-	  			</broker:storeUsage>
-	  			<broker:tempUsage>
-	  				<broker:tempUsage limit="1 gb"/>
-	  			</broker:tempUsage>
-	  		</broker:systemUsage>
-	  	</broker:systemUsage>
-	
-        <broker:transportConnectors>
-            <broker:transportConnector uri="tcp://0.0.0.0:61636" />
-        </broker:transportConnectors>
-    </broker:broker>
+    <!-- camel -->
+    <import resource="camelContext.xml"/>
+    
+    <!-- cxf -->
+    <import resource="cxfContext.xml"/>
+    
+    <!-- email(s) -->
+    <import resource="emailComponents.xml"/>
+    
+    <!-- batch jobs -->
+    <import resource="jobCommonCompsContext.xml"/>
+    <import resource="storeLocationJobContext.xml"/>
+    <import resource="vendorMaintCodeJobContext.xml"/>
+    <import resource="valvolineInstantStoreLocationJobContext.xml"/>
+    <import resource="vendorInvoiceJobContext.xml"/>
+    <import resource="directMapMaintCodesJobContext.xml"/>
+    <import resource="valvolineInstantInvoiceJobContext.xml"/>
+    <import resource="comdataFuelCardJobContext.xml"/>
+    <import resource="pepBoysInvoiceJobContext.xml"/>
+    <import resource="jiffyLubeInvoiceJobContext.xml" />     
 
-	<broker:connectionFactory id="jmsConnectionFactory" brokerURL="vm://localhost:61636" />
+    <!-- scans the classpath for annotated components (including @Repostory 
+    and @Service  that will be auto-registered as Spring beans  -->          
+    <context:component-scan base-package="com.mikealbert" />
 
-	<bean id="jmsProducerConnectionFactory"
-	    class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop" depends-on="broker">
-	    <property name="connectionFactory" ref="jmsConnectionFactory"/>
-	</bean>
+    <!-- AspectJ annotation -->
+    <aop:aspectj-autoproxy />  
 
-  <!-- lets configure the Camel ActiveMQ to use the embedded ActiveMQ broker declared above -->
-  <bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
-    <property name="brokerURL" value="vm://localhost:61636"/>
-  </bean>
-  
-  <bean id="PROPAGATION_REQUIRED" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
-	<property name="transactionManager" ref="transactionManager"/>
-	<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"/>
-  </bean>
-  
-  <bean id="PROPAGATION_REQUIRES_NEW" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
-	<property name="transactionManager" ref="transactionManager"/>
-	<property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW"/>
-  </bean>
+    <jpa:repositories base-package="com.mikealbert.vision.dao" />
+    <jpa:repositories base-package="com.mikealbert.data.dao" />
 
-	<jpa:repositories base-package="com.mikealbert.data.dao" />
-		
     <!-- This will ensure that hibernate or jpa exceptions are automatically translated into
          Spring's generic DataAccessException hierarchy for those classes annotated with Repository
          For example see UserDaoJpa-->
@@ -127,7 +81,7 @@
          <property name="jpaVendorAdapter">  
              <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">  
                  <property name="databasePlatform" value="org.hibernate.dialect.Oracle10gDialect"/>  
-                 <property name="showSql" value="false" />  
+                 <property name="showSql" value="true" />  
                  <property name="generateDdl" value="false" />  
              </bean>  
          </property>  
@@ -145,6 +99,18 @@
     <bean id="transactionManager"
           class="org.springframework.orm.jpa.JpaTransactionManager"
           p:entityManagerFactory-ref="entityManagerFactory"/>
+          
+	    <bean id="batchTransactionManager" lazy-init="true"
+	        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	    	<property name="dataSource" ref="dataSource" />
+	    </bean>
+	    
+    <!-- Transaction Configuration In Memory -->
+<!--     <bean id="batchTransactionManager"  -->
+<!--             class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/> -->
+            
+    
+        
 
     <!-- use declarative transaction management  -->
     <tx:annotation-driven  transaction-manager="transactionManager"/>
@@ -215,16 +181,8 @@
 	         </list>
 	     </property>                           	     
     </bean> 
-
-    <!-- Resource Bundle -->
-	<bean id="messageSource"
-                     class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
-         <property name="basename" value="classpath:messages"/>
-         <property name="defaultEncoding" value="UTF-8"/>
-         <property name="cacheSeconds" value ="5"/>
-	</bean>	
-	
-	<bean id="log4jInitialization"
+    
+    <bean id="log4jInitialization"
  		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 	   <property name="targetClass"
 	      value="org.springframework.util.Log4jConfigurer" />
@@ -235,6 +193,45 @@
 	      </list>
 	   </property>
 	</bean>
+    
+    
+    
+    <!-- Resource Bundle -->
+	<bean id="messageSource"
+                     class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+         <property name="basename" value="classpath:messages"/>
+         <property name="defaultEncoding" value="UTF-8"/>
+         <property name="cacheSeconds" value ="5"/>
+	</bean>	
+	
+    <batch:job-repository id="jobRepository"
+           data-source="dataSource"
+           transaction-manager="batchTransactionManager"
+           isolation-level-for-create="READ_COMMITTED"
+           table-prefix="BATCH_"/>
+           
+<!--     <bean id="jobRepository" -->
+<!-- 		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean"> -->
+<!-- 		<property name="transactionManager" ref="batchTransactionManager"/> -->
+<!-- 	</bean> -->
 
-  	
-</beans>
+    <!-- Job Launcher -->
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">      
+        <property name="jobRepository" ref="jobRepository" />
+    </bean>
+    
+    <bean id="providerFileToProcessingJobMap" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+  			<ref local="providerFileToProcessingJobMapFactory" /> 
+  		</property>
+		<property name="targetMethod">
+  			<value>getMap</value> 
+  		</property>
+	</bean>
+	<bean id="providerFileToProcessingJobMapFactory" class="com.mikealbert.util.HashMapFromProperties">
+		<property name="location"><value>classpath:ProviderFileProcessingJobXRef.properties</value></property>
+		<property name="parsedAslistOfValues" value="true" />
+	</bean>
+    
+ </beans>
+ 

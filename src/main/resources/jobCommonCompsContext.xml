@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+	
+	<!-- Writers -->	
+	<bean id="storeLocationWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
+		<property name="jmsTemplate" ref="jmsLocTemplate"/>
+	</bean>
+	
+	<bean id="storeErrorWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
+		<property name="jmsTemplate" ref="jmsLocErrorsTemplate"/>
+	</bean>
+	
+	<bean id="loadVendorMaintCodeWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
+		<property name="jmsTemplate" ref="jmsCodeTemplate"/>
+	</bean>
+	
+	<bean id="vendorMaintCodeErrorWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
+		<property name="jmsTemplate" ref="jmsCodeErrorsTemplate"/>
+	</bean>
+	
+	<bean id="vendorInvoiceWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
+		<property name="jmsTemplate" ref="jmsInvoiceTemplate"/>
+	</bean>
+	
+	<bean id="vendorInvoiceErrorWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
+		<property name="jmsTemplate" ref="jmsInvoiceErrorsTemplate"/>
+	</bean>	
+	
+	
+	
+	<!-- Validation Listeners -->
+	<bean id="vendorMaintCodeValidationExceptionListener" class="com.mikealbert.batch.listeners.ValdiationExceptionListener" scope="step">
+		<property name="errorWriter" ref="jmsCodeErrorsTemplate"/>
+	</bean>
+	<bean id="storeValidationExceptionListener" class="com.mikealbert.batch.listeners.ValdiationExceptionListener" scope="step">
+		<property name="errorWriter" ref="jmsLocErrorsTemplate"/>
+	</bean>
+	<bean id="vendorInvoiceExceptionListener" class="com.mikealbert.batch.listeners.ValdiationExceptionListener" scope="step">
+		<property name="errorWriter" ref="jmsInvoiceErrorsTemplate"/>
+	</bean>
+	
+	<!-- (Other) Listeners -->
+	<bean id="statusMailNotificationListener" class="com.mikealbert.batch.listeners.StatusMailJobListener">
+		<property name="mailSendService" ref="emailService"/>
+		<property name="mailBodyHelper" ref="bodyHelper"/>
+		<property name="mailMessage" ref="interfaceSuccessEmail"/>
+	</bean>
+	
+	<bean id="comdataStatusMailNotificationListener" class="com.mikealbert.batch.listeners.ComdataStatusMailJobListener">
+	    <property name="mailSendService" ref="emailService"/>
+	    <property name="comdataMailBodyHelper" ref="comdataBodyHelper"/>
+	    <property name="mailMessage" ref="interfaceSuccessEmail"/>
+	</bean>
+	
+	<bean id="sysTimeRecordIdInitializingJobListener" class="com.mikealbert.batch.listeners.SysTimeRecordIdInitializingJobListener" />
+	<bean id="loadIdInitializingJobListener" class="com.mikealbert.batch.listeners.LoadIdInitializingJobListener" />
+	
+	<bean id="execListenerCtxInjector" class="com.mikealbert.batch.listeners.StepExecutionListenerCtxInjector" />
+	
+	<!-- Regular Processors -->
+	<bean id="invoiceValidatingRecAndLineIdProcessor"
+      class="org.springframework.batch.item.support.CompositeItemProcessor" scope="step">
+	  <property name="delegates">
+	    <list>
+	      <ref local="loadIdProcessor"/>
+	   	  <ref local="recordIdDerivingProcessor"/>
+	   	  <ref local="detailLineIdDerivingProcessor"/>
+	      <ref local="vendorInvoiceValidator"/>
+	    </list>
+	  </property>
+	</bean>
+	<!-- Regular Processors -->
+	<bean id="fuelCardRecProcessor"
+      class="org.springframework.batch.item.support.CompositeItemProcessor" scope="step">
+	  <property name="delegates">
+	    <list>
+	      <ref local="loadIdProcessor"/>
+	   	<ref local="fuelUploadValidator"/>
+	    </list>
+	  </property>
+	</bean>
+	
+	<bean id="detailLineIdDerivingProcessor" class="com.mikealbert.batch.processors.DetailLineIdDerivingProcessor" scope="step"/>
+	<bean id="recordIdDerivingProcessor" class="com.mikealbert.batch.processors.RecordIdDerivingProcessor" scope="step"/>
+	<bean id="loadIdProcessor" class="com.mikealbert.batch.processors.LoadIdProcessor" scope="step"/>
+
+	<bean id="storeLocationValidatingOpCodeProcessor"
+      class="org.springframework.batch.item.support.CompositeItemProcessor" scope="step">
+	  <property name="delegates">
+	    <list>
+	   	  <ref local="storeLocationOpCodeProcessor"/>
+	      <ref local="storeLocationValidator"/>
+	    </list>
+	  </property>
+	</bean>
+	
+	<bean id="storeLocationOpCodeProcessor"
+      class="com.mikealbert.batch.processors.OpCodeDerivingProcessor" scope="step" >
+      	<property name="matchingProperties">
+			<list>
+				<bean class="com.mikealbert.data.util.PropertyMatchVO">
+					<property name="sourcePropertyName" value="serviceProviderNumber" />
+					<property name="targetPropertyName" value="storeCode" />
+					<property name="excludedCharacters" value="-_" />
+				</bean>
+			</list>
+		</property>
+		<property name="listFactory" ref="serviceProviderFactory" />
+	</bean>  
+
+	<!-- Supporting Beans -->
+	<bean id="serviceProviderFactory" class="com.mikealbert.data.ServiceProviderMatchingListFactory" scope="step" />
+	
+	<!-- Validation Processors -->
+	<bean id="storeLocationValidator" class="org.springframework.batch.item.validator.ValidatingItemProcessor">
+	    <property name="filter" value="false" />
+	    <property name="validator">
+	        <bean class="com.mikealbert.batch.validators.StoreLocationValidator" />
+	    </property>	
+	</bean>		
+	<bean id="loadVendorMaintCodeValidator" class="org.springframework.batch.item.validator.ValidatingItemProcessor">
+	    <property name="filter" value="false" />
+	    <property name="validator">
+	        <bean class="com.mikealbert.batch.validators.VendorMaintCodeValidator" />
+	    </property>	
+	</bean>
+	
+	<bean id="vendorInvoiceValidator" class="org.springframework.batch.item.validator.ValidatingItemProcessor">
+	    <property name="filter" value="false" />
+	    <property name="validator">
+	        <bean class="com.mikealbert.batch.validators.VendorInvoiceValidator" />
+	    </property>	
+	</bean>
+	
+	<bean id="fuelUploadValidator" class="org.springframework.batch.item.validator.ValidatingItemProcessor">
+	    <property name="filter" value="false" />
+	    <property name="validator">
+	        <bean class="com.mikealbert.batch.validators.FuelCardValidator" />
+	    </property>	
+	</bean>
+	
+	<!-- Tasklets -->	
+
+
+	<!-- Supporting beans for JMS -->
+	<broker:queue id="locDestination" physicalName="queue.vendorLocations" />
+	<broker:queue id="codeDestination" physicalName="queue.vendorCodes" />
+	<broker:queue id="invoiceDestination" physicalName="queue.vendorInvoices" />
+	
+	<broker:queue id="locErrors" physicalName="errors.vendorLocations" />
+	<broker:queue id="codeErrors" physicalName="errors.vendorCodes" />
+	<broker:queue id="invoiceErrors" physicalName="errors.vendorInvoices" />
+
+	<broker:broker id="broker" useJmx="true" persistent="true">
+		<broker:systemUsage>
+	  		<broker:systemUsage>
+	  		  	<broker:memoryUsage>
+	  				<broker:memoryUsage limit="64 mb"/>
+	  			</broker:memoryUsage>
+	  		  	<broker:storeUsage>
+	  				<broker:storeUsage limit="2 gb"/>
+	  			</broker:storeUsage>
+	  			<broker:tempUsage>
+	  				<broker:tempUsage limit="1 gb"/>
+	  			</broker:tempUsage>
+	  		</broker:systemUsage>
+	  	</broker:systemUsage>
+	
+        <broker:transportConnectors>
+            <broker:transportConnector uri="tcp://0.0.0.0:61636" />
+        </broker:transportConnectors>
+    </broker:broker>
+
+	<broker:connectionFactory id="jmsConnectionFactory" brokerURL="vm://localhost:61636" />
+
+	<bean id="jmsProducerConnectionFactory"
+	    class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop" depends-on="broker">
+	    <property name="connectionFactory" ref="jmsConnectionFactory"/>
+	</bean>
+	
+
+    <bean id="jmsLocTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
+    	<property name="defaultDestination" ref="locDestination"/>
+    </bean>
+    
+    <bean id="jmsCodeTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
+    	<property name="defaultDestination" ref="codeDestination"/>
+    </bean>
+    
+    <bean id="jmsLocErrorsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
+    	<property name="defaultDestination" ref="locErrors"/>
+    </bean>
+    
+    <bean id="jmsCodeErrorsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
+    	<property name="defaultDestination" ref="codeErrors"/>
+    </bean>
+    
+    
+    <bean id="jmsInvoiceTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
+    	<property name="defaultDestination" ref="invoiceDestination"/>
+    </bean>
+    
+    <bean id="jmsInvoiceErrorsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
+    	<property name="defaultDestination" ref="invoiceErrors"/>
+    </bean> 
+</beans>

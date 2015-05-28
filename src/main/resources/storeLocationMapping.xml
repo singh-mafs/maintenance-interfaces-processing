@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beanio xmlns="http://www.beanio.org/2012/03" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.beanio.org/2012/03 http://www.beanio.org/2012/03/mapping.xsd">
+  <stream name="storeLocationIdealFile" format="csv">
+    <record name="storeLocationVO" class="com.mikealbert.data.vo.StoreLocationVO">
+      <field name="storeCode" required="false" trim="true" />
+      <field name="storeName" required="false" trim="true" />
+      <field name="telephoneNumber" required="false" trim="true" />
+      <field name="faxNumber" required="false" trim="true" />
+      <field name="emailAddress" required="false" trim="true"/>
+      <field name="weekdayStartTime" required="false" trim="true" />
+      <field name="weekdayEndTime" required="false" trim="true" />
+      <field name="saturdayStartTime" required="false" trim="true" />
+      <field name="saturdayEndTime" required="false" trim="true" />
+      <field name="sundayStartTime" required="false" trim="true" />
+      <field name="sundayEndTime" required="false" trim="true" />
+      <field name="numberOfBays" type="long" required="false" trim="true" />
+      <field name="clearanceInFeet" type="long" required="false" trim="true" />
+	  <field name="addressLine1" required="false" trim="true" />
+      <field name="addressLine2" required="false" trim="true" />
+      <field name="addressLine3" required="false" trim="true" />
+      <field name="addressLine4" required="false" trim="true" />
+      <field name="zipCode" required="false" trim="true" />
+      <field name="city" required="false" trim="true" />
+      <field name="stateProv" required="false" trim="true" />
+      <field name="countyCode" required="false" trim="true" />
+      <field name="operationCode" maxLength="1" trim="true" />
+    </record>
+  </stream>
+</beanio>

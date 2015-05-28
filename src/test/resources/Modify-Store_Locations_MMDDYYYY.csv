@@ -1,0 +1,2 @@
+Store_Code,Store_Name,Telephone_Number,Fax_number,Email_Address ,Weekday_Start_Time,Weekday_End_Time,Saturday_Start_Time,Saturday_End_Time,Sunday_Start_Time,Sunday_End_Time,Number_Of_Bays,Clearance_In_Feet,Address_Line_1,Address_Line_2,Address_Line_3,Address_Line_4,Zip_Code,City,State_Prov,County_Code,Operation_Code
+CAL01,Test Location 1,847-481-2000,,RAVIC@MIKEALBERT.com,01:30:00AM IST,06:30:00AM IST,01:30:00AM IST,06:30:00AM IST,01:30:00AM IST,06:30:00AM IST,,,MI Support Service- Lock Box,Business Vehicle Finance,4701 West Schroeder Dr,,45241,EVENDALE,OH,061,M

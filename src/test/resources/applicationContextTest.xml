@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:sec="http://www.springframework.org/schema/security"
+       xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+            http://www.springframework.org/schema/jdbc
+            http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-3.1.xsd
+            http://www.springframework.org/schema/data/jpa 
+            http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+            http://www.springframework.org/schema/cache 
+            http://www.springframework.org/schema/cache/spring-cache.xsd
+            http://www.springframework.org/schema/security 
+            http://www.springframework.org/schema/security/spring-security-3.1.xsd
+            http://www.springframework.org/schema/batch
+            http://www.springframework.org/schema/batch/spring-batch.xsd  
+            ">
+
+    <!-- camel -->
+    <import resource="camelContext.xml"/>
+    
+    <!-- batch jobs -->
+    <import resource="jobCommonCompsContext.xml"/>
+    <import resource="storeLocationJobContext.xml"/>
+    <import resource="vendorMaintCodeJobContext.xml"/>
+    <import resource="valvolineInstantStoreLocationJobContext.xml"/>
+
+    <!-- scans the classpath for annotated components (including @Repostory 
+    and @Service  that will be auto-registered as Spring beans  -->          
+    <context:component-scan base-package="com.mikealbert" />
+
+    <!-- AspectJ annotation -->
+    <aop:aspectj-autoproxy />  
+
+    <jpa:repositories base-package="com.mikealbert.vision.dao" />
+    <jpa:repositories base-package="com.mikealbert.data.dao" />
+
+    <!-- This will ensure that hibernate or jpa exceptions are automatically translated into
+         Spring's generic DataAccessException hierarchy for those classes annotated with Repository
+         For example see UserDaoJpa-->
+    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+        <property name="url" value="jdbc:oracle:thin:@svc-dev-db-dev1:1522:DEV2" />
+        <property name="username" value="AUTO" />
+        <property name="password" value="Mation13" />
+	</bean>
+	
+	<bean id="entityManagerFactory"  
+	      class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">  
+         <property name="persistenceUnitName" value="CorePU"/>  
+         <property name="dataSource" ref="dataSource"/>   
+         <property name="jpaVendorAdapter">  
+             <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">  
+                 <property name="databasePlatform" value="org.hibernate.dialect.Oracle10gDialect"/>  
+                 <property name="showSql" value="true" />  
+                 <property name="generateDdl" value="false" />  
+             </bean>  
+         </property>  
+         <property name="packagesToScan">
+             <list>
+                 <value>com.mikealbert.data.entity</value>
+             </list>
+         </property>           
+    </bean>  
+    
+    <!-- bean post-processor for JPA annotations -->
+    <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+ 
+    <!-- Transaction Config -->
+    <bean id="transactionManager"
+          class="org.springframework.orm.jpa.JpaTransactionManager"
+          p:entityManagerFactory-ref="entityManagerFactory"/>
+          
+<!--     <bean id="batchTransactionManager" lazy-init="true" -->
+<!--         class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> -->
+<!--     	<property name="dataSource" ref="dataSource" /> -->
+<!--     </bean> -->
+    
+    <!-- Transaction Configuration In Memory -->
+    <bean id="batchTransactionManager" 
+            class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>
+            
+    
+        
+
+    <!-- use declarative transaction management  -->
+    <tx:annotation-driven  transaction-manager="transactionManager"/>
+    
+   	<!-- cache configuration -->
+	<cache:annotation-driven/>
+    <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+	  <property name="caches">
+	    <set>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="titleCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="driverManualStatusCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="addressTypeCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="uomCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="driverAllocCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="odometerReadingCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="phoneNumberTypes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="relationshipTypes"/>	
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenaceRequestTypes"/>	
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRequestStatuses"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCategories"/>	  	      
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="costAvoidanceReasons"/>	
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRechargeCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintenanceCodes"/>	
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="documentTransactionTypes"/>	            	            		      	      
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="resourceRoleMap"/>	            		      	      	       	      
+	    </set>
+	  </property>
+	</bean>
+    
+    <!-- Resource Bundle -->
+	<bean id="messageSource"
+                     class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+         <property name="basename" value="classpath:messages"/>
+         <property name="defaultEncoding" value="UTF-8"/>
+         <property name="cacheSeconds" value ="5"/>
+	</bean>	
+	
+	<!-- Property Files -->	
+	<context:property-placeholder location="classpath:mvi.properties"/>
+	
+<!--     <batch:job-repository id="jobRepository" -->
+<!--            data-source="dataSource" -->
+<!--            transaction-manager="batchTransactionManager" -->
+<!--            isolation-level-for-create="READ_COMMITTED" -->
+<!--            table-prefix="BATCH_"/> -->
+           
+    <bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<property name="transactionManager" ref="batchTransactionManager"/>
+	</bean>
+
+    <!-- Job Launcher -->
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">      
+        <property name="jobRepository" ref="jobRepository" />
+    </bean>
+
+ </beans>
+ 

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+
+    <!-- Job Definition -->
+	<batch:job id="valvolineInstantInvoiceJob" incrementer="jobRunIncrementer"
+	        job-repository="jobRepository">	   
+		<batch:step id="loadValvolineVendorInvoiceVO">
+			<batch:tasklet>
+				<batch:chunk reader="valvolineInstantInvoiceReader" processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>						
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>
+					<batch:streams >
+						<batch:stream ref="fileItemReader" />
+						
+					</batch:streams>			        
+				</batch:chunk>
+			</batch:tasklet>	
+			<batch:listeners>
+				<batch:listener ref="vendorInvoiceExceptionListener"/>
+				<batch:listener ref="execListenerCtxInjector" />
+			</batch:listeners>	
+		</batch:step>	
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>								
+	</batch:job>
+	
+	<bean id="valvolineInstantInvoiceReader"  class="com.mikealbert.batch.readers.MultiLineReader" scope="step">
+		<property name="fieldSetReader" ref="fileItemReader" />
+		<property name="headerMapper"   ref="headerFieldSetMapper" />
+		<property name="detailsMapper" ref="detailsFieldSetMapper" />
+	</bean>
+	
+	<bean id="headerFieldSetMapper"    class="com.mikealbert.batch.mappers.HeaderFieldSetMapper" scope="step" />
+	<bean id="detailsFieldSetMapper"  class="com.mikealbert.batch.mappers.DetailsFieldSetMapper" scope="step" />
+	
+
+	<bean id="fileItemReader"  class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="strict" value="false" />
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer" ref="invoiceFileTokenizer" />
+				<property name="fieldSetMapper">
+					<bean class="org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper" />
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	
+	<bean id="invoiceFileTokenizer"  class="org.springframework.batch.item.file.transform.PatternMatchingCompositeLineTokenizer">
+		<property name="tokenizers">
+			<map>
+				
+				<entry key="*"    value-ref="defaultLineTokenizer" />
+			</map>
+		</property>
+	</bean>
+	
+	
+	<bean id="defaultLineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value=","/>
+		<property name="names" value="INVNUM,INVDT,CUSTFIRSTNAME,CUSTLASTNAME,ADDRLINE1,ADDRLINE2,CITY,STCD,ZIPCD1,
+	                	CURRODOMETER,INVDISCAMT,PRETAXAMT,TOTALTAXAMT,TOTALDUEAMT,CURRDRIVERNAME,TAXEXEMPTID,PHONE,ZIPCD2,EMAIL,
+	                	STORENAME,STOREADDR1,STOREADDR2,STORECITY,STORESTCD,STOREZIPCD,STOREPHONE,MAKE,MODEL
+	                	,ENGINE,YEAR,LICENSEPLATEST,LICENSEPLATENUM,STORENUM,SUBTOTALAMT,FLTACNTID,FLTDESC,PRINTCOMMENTS
+	                	,FLTTOTALDISCAMT,PO,UNIT,FLEET,AUTHNUM,AUTHNAME,VIN,INVLINENUM,LINEAMT,RTLPRICE,QTY,ITEMDESC,QTYUOM,FLEETPRODUCTNO"/>            	                    	                    	                    
+	</bean>
+		
+</beans>

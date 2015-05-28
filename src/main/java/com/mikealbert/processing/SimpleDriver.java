@@ -1,4 +1,4 @@
-package com.mikealbert.processing.maintenance_interfaces;
+package com.mikealbert.processing;
 
 import org.apache.camel.spring.Main;
 import org.springframework.beans.factory.BeanDefinitionStoreException;

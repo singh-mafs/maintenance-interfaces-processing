@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+
+    <!-- Job Definition -->
+	<batch:job id="vendorInvoiceJob" incrementer="jobRunIncrementer"
+	        job-repository="jobRepository">	   
+		<batch:step id="loadVendorInvoiceVO">
+			<batch:tasklet>
+				<batch:chunk reader="vendorInvoiceReader" processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>						
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>			        
+				</batch:chunk>
+			</batch:tasklet>	
+			<batch:listeners>
+				<batch:listener ref="vendorInvoiceExceptionListener"/>
+				<batch:listener ref="execListenerCtxInjector" />
+			</batch:listeners>	
+		</batch:step>	
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>								
+	</batch:job>
+	
+	<!-- Readers -->		
+	<bean id="vendorInvoiceReader" class="org.beanio.spring.BeanIOFlatFileItemReader" scope="step">
+	    <property name="streamMapping" value="classpath:/vendorInvoiceMapping.xml" />
+	    <property name="streamName" value="vendorInvoiceIdealFile" />
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	</bean>
+	
+</beans>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+	<!-- Job Definition -->
+	<batch:job id="jiffyLubeInvoiceJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="LoadJiffyLubeVendorInvoiceVO">
+			<batch:tasklet>
+				<batch:chunk reader="jiffyLubeReader"  processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>
+						<batch:include class="org.springframework.batch.item.UnexpectedInputException" />						
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>
+					<batch:streams >
+						<batch:stream ref="jiffyLubeFileItemReader" />
+					</batch:streams>			        
+				</batch:chunk>
+			</batch:tasklet>	
+			<batch:listeners>
+				<batch:listener ref="vendorInvoiceExceptionListener"/>
+				<batch:listener ref="execListenerCtxInjector" />
+			</batch:listeners>	
+		</batch:step>	
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>
+	</batch:job>
+ 		
+	<bean id="jiffyLubeReader"
+		class="com.mikealbert.batch.readers.AggregateHeaderDetailItemReader" scope="step">
+		<property name="itemReader" ref="jiffyLubeFileItemReader" />
+		<property name="checkPropertyName" value="recordType" />
+		<property name="checkPropertyValue" value="HDR" />
+		<property name="checkPropertyToHelperClass">
+			<map>
+				<entry key="H" value-ref="jiffyLubeFLTHelper" />
+				<entry key="D" value-ref="jiffyLubeDTLHelper" />
+				<entry key="TND" value-ref="jiffyLubeTNDHelper" />				
+			</map>
+		</property>
+	</bean>
+
+	<bean id="jiffyLubeFLTHelper" class="com.mikealbert.batch.mappers.mappinghelpers.CombineMappingHelper" />
+	<bean id="jiffyLubeDTLHelper" class="com.mikealbert.batch.mappers.mappinghelpers.AddMappingHelper" >
+		<property name="methodName" value="addDetail" />
+	</bean>
+	<bean id="jiffyLubeTNDHelper" class="com.mikealbert.batch.mappers.mappinghelpers.TaxAndRebateSplitMappingHelper" />
+
+	<bean id="jiffyLubeFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="strict" value="false" />
+		<property name="lineMapper" ref="jiffyLubePrefixMatchingLineMapper" />
+	</bean>
+	
+	<bean id="jiffyLubePrefixMatchingLineMapper" class="org.springframework.batch.item.file.mapping.PatternMatchingCompositeLineMapper">
+		<property name="tokenizers">
+			<map>
+				<entry key="*HDR01*" value-ref="jiffyLubeHeaderRecordTokenizer" />
+				<entry key="*FLT02*" value-ref="jiffyLubeFLTRecordTokenizer" />
+				<entry key="*DTL03*" value-ref="jiffyLubeDetailRecordTokenizer" />
+				<entry key="*TND04*" value-ref="jiffyLubeTNDRecordTokenizer" />
+				<entry key="*"  value-ref="jiffyLubeNoRecordTokenizer" />
+			</map>
+		</property>
+		<property name="fieldSetMappers">
+			<map>
+				<entry key="*HDR01*" value-ref="jiffyLubeHeaderMapper" />
+				<entry key="*FLT02*" value-ref="jiffyLubeHeaderMapper" />
+				<entry key="*DTL03*" value-ref="jiffyLubeDetailMapper" />
+				<entry key="*TND04*" value-ref="jiffyLubeDetailMapper" />
+				<entry key="*"  value-ref="noRecordFieldSetMapper" />
+			</map>
+		</property>		
+	</bean>
+	
+	<bean id="jiffyLubeHeaderRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType,storeNbr,docNumber,driver,plannedDate,mileage" />
+		<property name="columns" value="63-65,26-30,39-46,80-119,31-38,206-211" />
+	</bean>
+	
+	<bean id="jiffyLubeFLTRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType,ruleId,ruleValue" />
+		<property name="columns" value="63-65,68-69,70-99" />
+	</bean>	
+
+	<bean id="jiffyLubeDetailRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType,partServiceCode,partServiceDesc,qty,unitCost,totalCost" />
+		<property name="columns" value="63-65,68-70,71-95,101-105,96-100,106-111" />
+	</bean>
+	
+	<bean id="jiffyLubeTNDRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType,taxAmount,discRebateAmt" />
+		<property name="columns" value="63-65,85-90,74-78" />
+	</bean>
+	
+	<bean id="jiffyLubeNoRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType" />
+		<property name="columns" value="1-1" />
+	</bean>		
+	
+	<bean id="jiffyLubeHeaderMapper" class="com.mikealbert.batch.mappers.JiffyLubeHeaderFieldSetMapper" />
+	<bean id="jiffyLubeDetailMapper" class="com.mikealbert.batch.mappers.JiffyLubeDetailFieldSetMapper" />
+	<bean id="noRecordFieldSetMapper" class="com.mikealbert.batch.mappers.NoRecordFieldSetMapper" />
+	
+</beans>

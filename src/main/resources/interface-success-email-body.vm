@@ -1,0 +1,9 @@
+Successfully downloaded from $inputFile Message date: $executionDateTime
+
+$readWriteErrors : Could not be Processed (Contact ITS HelpDesk)
+$validationErrors : Invalid Records (Refer to Job Aide for the actions to be taken)
+$writeSuccess : Valid Records
+$totalRecords : Total Records
+
+
+
