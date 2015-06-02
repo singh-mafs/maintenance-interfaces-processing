@@ -38,7 +38,58 @@
 	 		<artifactId>ojdbc6</artifactId>
 	 		<version>11.1.0.7.0</version>
 	 	</dependency>
-		
+
+  	<dependency>
+		<groupId>com.mikealbert.batch</groupId>
+		<artifactId>mafs-core-batch</artifactId>
+		<version>1.2.1</version>
+	</dependency> 
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-beanio</artifactId>
+		<version>2.11.0</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-juel</artifactId>
+		<version>2.11.0</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-spring-batch</artifactId>
+		<version>2.11.0</version>
+	</dependency>
+	<dependency>
+		<groupId>edu.stanford.nlp</groupId>
+		<artifactId>stanford-corenlp</artifactId>
+		<version>3.3.1</version>
+	</dependency>
+	<dependency>
+        <groupId>edu.stanford.nlp</groupId>
+        <artifactId>stanford-corenlp</artifactId>
+        <version>3.3.1</version>
+        <classifier>models</classifier>
+    </dependency>
+	<dependency>
+	    <groupId>org.apache.camel</groupId>
+	    <artifactId>camel-ftp</artifactId>
+	    <version>2.11.2</version>
+    <!-- use the same version as your Camel core version -->
+	</dependency>
+	<!-- Testing -->
+	<dependency>
+		<groupId>org.springframework.batch</groupId>
+		<artifactId>spring-batch-test</artifactId>
+		<version>2.2.2.RELEASE</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+	  <groupId>org.apache.camel</groupId>
+	  <artifactId>camel-test-spring</artifactId>
+	  <version>2.11.0</version>
+	  <scope>test</scope>
+	</dependency>
+	
 		
 		<!-- Testing -->
 		<dependency>
@@ -47,6 +98,29 @@
 		 	<version>1.0.4</version>
 		 	<scope>testing</scope>
 		</dependency>
+		
+			<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-cxf</artifactId>
+	   	<version>2.11.0</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-xstream</artifactId>
+	   	<version>2.11.0</version>
+	</dependency>
+	<dependency>
+	  	<groupId>org.apache.camel</groupId>
+		<artifactId>camel-jetty</artifactId>
+	   	<version>2.11.0</version>
+	</dependency>
+	
+	<dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http-jetty</artifactId>
+      <version>2.7.4</version>
+    </dependency>
+		
 	</dependencies>  
   <build>
   	<finalName>maintenance-interfaces</finalName>
