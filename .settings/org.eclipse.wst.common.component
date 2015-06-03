@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name=">maintenance-interfaces-processing">
+    <wb-module deploy-name="&gt;maintenance-interfaces-processing">
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
@@ -16,7 +16,10 @@
         <dependent-module archiveName="mafs-core-services-1.4.MSS-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/mafs-core-services-mss_R2/mafs-core-services-mss_R2">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <property name="java-output-path" value="/>maintenance-interfaces-processing/build/classes"/>
-        <property name="context-root" value="vehicle-schedules"/>
+        <dependent-module archiveName="mafs-core-batch-1.2.MSS-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/mafs-core-batch/mafs-core-batch">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="java-output-path" value="/&gt;maintenance-interfaces-processing/build/classes"/>
+        <property name="context-root" value="maintenance-interfaces"/>
     </wb-module>
 </project-modules>

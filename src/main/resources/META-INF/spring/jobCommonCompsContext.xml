@@ -10,6 +10,35 @@
                                  http://activemq.apache.org/schema/core 
                                  http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
 	
+    <bean id="batchTransactionManager" lazy-init="true"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <batch:job-repository id="jobRepository"
+           data-source="dataSource"
+           transaction-manager="batchTransactionManager"
+           isolation-level-for-create="READ_COMMITTED"
+           table-prefix="BATCH_"/>
+           
+    <!-- Job Launcher -->
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">      
+        <property name="jobRepository" ref="jobRepository" />
+    </bean>
+    
+    <bean id="providerFileToProcessingJobMap" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+  			<ref local="providerFileToProcessingJobMapFactory" /> 
+  		</property>
+		<property name="targetMethod">
+  			<value>getMap</value> 
+  		</property>
+	</bean>
+	<bean id="providerFileToProcessingJobMapFactory" class="com.mikealbert.util.HashMapFromProperties">
+		<property name="location"><value>classpath:ProviderFileProcessingJobXRef.properties</value></property>
+		<property name="parsedAslistOfValues" value="true" />
+	</bean>
+
 	<!-- Writers -->	
 	<bean id="storeLocationWriter" class="com.mikealbert.batch.item.jms.JmsItemAndJobParameterWriter" scope="step">
 		<property name="jmsTemplate" ref="jmsLocTemplate"/>
@@ -35,8 +64,6 @@
 		<property name="jmsTemplate" ref="jmsInvoiceErrorsTemplate"/>
 	</bean>	
 	
-	
-	
 	<!-- Validation Listeners -->
 	<bean id="vendorMaintCodeValidationExceptionListener" class="com.mikealbert.batch.listeners.ValdiationExceptionListener" scope="step">
 		<property name="errorWriter" ref="jmsCodeErrorsTemplate"/>
@@ -54,13 +81,7 @@
 		<property name="mailBodyHelper" ref="bodyHelper"/>
 		<property name="mailMessage" ref="interfaceSuccessEmail"/>
 	</bean>
-	
-	<bean id="comdataStatusMailNotificationListener" class="com.mikealbert.batch.listeners.ComdataStatusMailJobListener">
-	    <property name="mailSendService" ref="emailService"/>
-	    <property name="comdataMailBodyHelper" ref="comdataBodyHelper"/>
-	    <property name="mailMessage" ref="interfaceSuccessEmail"/>
-	</bean>
-	
+
 	<bean id="sysTimeRecordIdInitializingJobListener" class="com.mikealbert.batch.listeners.SysTimeRecordIdInitializingJobListener" />
 	<bean id="loadIdInitializingJobListener" class="com.mikealbert.batch.listeners.LoadIdInitializingJobListener" />
 	
@@ -75,16 +96,6 @@
 	   	  <ref local="recordIdDerivingProcessor"/>
 	   	  <ref local="detailLineIdDerivingProcessor"/>
 	      <ref local="vendorInvoiceValidator"/>
-	    </list>
-	  </property>
-	</bean>
-	<!-- Regular Processors -->
-	<bean id="fuelCardRecProcessor"
-      class="org.springframework.batch.item.support.CompositeItemProcessor" scope="step">
-	  <property name="delegates">
-	    <list>
-	      <ref local="loadIdProcessor"/>
-	   	<ref local="fuelUploadValidator"/>
 	    </list>
 	  </property>
 	</bean>
@@ -141,15 +152,7 @@
 	    </property>	
 	</bean>
 	
-	<bean id="fuelUploadValidator" class="org.springframework.batch.item.validator.ValidatingItemProcessor">
-	    <property name="filter" value="false" />
-	    <property name="validator">
-	        <bean class="com.mikealbert.batch.validators.FuelCardValidator" />
-	    </property>	
-	</bean>
-	
 	<!-- Tasklets -->	
-
 
 	<!-- Supporting beans for JMS -->
 	<broker:queue id="locDestination" physicalName="queue.vendorLocations" />
@@ -160,34 +163,11 @@
 	<broker:queue id="codeErrors" physicalName="errors.vendorCodes" />
 	<broker:queue id="invoiceErrors" physicalName="errors.vendorInvoices" />
 
-	<broker:broker id="broker" useJmx="true" persistent="true">
-		<broker:systemUsage>
-	  		<broker:systemUsage>
-	  		  	<broker:memoryUsage>
-	  				<broker:memoryUsage limit="64 mb"/>
-	  			</broker:memoryUsage>
-	  		  	<broker:storeUsage>
-	  				<broker:storeUsage limit="2 gb"/>
-	  			</broker:storeUsage>
-	  			<broker:tempUsage>
-	  				<broker:tempUsage limit="1 gb"/>
-	  			</broker:tempUsage>
-	  		</broker:systemUsage>
-	  	</broker:systemUsage>
-	
-        <broker:transportConnectors>
-            <broker:transportConnector uri="tcp://0.0.0.0:61636" />
-        </broker:transportConnectors>
-    </broker:broker>
-
-	<broker:connectionFactory id="jmsConnectionFactory" brokerURL="vm://localhost:61636" />
-
 	<bean id="jmsProducerConnectionFactory"
 	    class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop" depends-on="broker">
 	    <property name="connectionFactory" ref="jmsConnectionFactory"/>
 	</bean>
 	
-
     <bean id="jmsLocTemplate" class="org.springframework.jms.core.JmsTemplate">
     	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
     	<property name="defaultDestination" ref="locDestination"/>
@@ -207,7 +187,6 @@
     	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>
     	<property name="defaultDestination" ref="codeErrors"/>
     </bean>
-    
     
     <bean id="jmsInvoiceTemplate" class="org.springframework.jms.core.JmsTemplate">
     	<property name="connectionFactory" ref="jmsProducerConnectionFactory"/>

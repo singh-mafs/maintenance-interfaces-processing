@@ -39,6 +39,23 @@
          http://www.springframework.org/schema/jee/spring-jee.xsd
          ">
 
+    <!-- cxf -->
+    <import resource="cxfContext.xml"/>
+    
+    <!-- email(s) -->
+    <import resource="emailComponents.xml"/>
+    
+    <!-- batch jobs -->
+    <import resource="jobCommonCompsContext.xml"/>
+    <import resource="storeLocationJobContext.xml"/>
+    <import resource="vendorMaintCodeJobContext.xml"/>
+    <import resource="valvolineInstantStoreLocationJobContext.xml"/>
+    <import resource="vendorInvoiceJobContext.xml"/>
+    <import resource="directMapMaintCodesJobContext.xml"/>
+    <import resource="valvolineInstantInvoiceJobContext.xml"/>
+    <import resource="pepBoysInvoiceJobContext.xml"/>
+    <import resource="jiffyLubeInvoiceJobContext.xml" /> 
+
 		 <!-- let Spring do its IoC stuff in this package -->
 		 <context:component-scan base-package="com.mikealbert" />
 		 
@@ -46,7 +63,7 @@
 		   <camel:package>com.mikealbert.processing.routes</camel:package>
 		   <!-- enable JMX connector so we can connect to the server and browse mbeans -->
 		   <!-- Camel will log at INFO level the service URI to use for connecting with jconsole -->
-		   <camel:jmxAgent id="agent" createConnector="true"/>
+		   <camel:jmxAgent id="agent" registryPort="{{jmx.port}}" createConnector="true"/>
 		 </camel:camelContext>
 		 
 		 <!-- AspectJ annotation -->
@@ -60,11 +77,14 @@
 					</list>
 				</property>
 		</bean>
-	
-  	<!--<broker:queue id="schedulesProcessedQueue" physicalName="queue.schedulesProcessed" />-->	
-  
+
+
+
   <!-- lets configure the ActiveMQ JMS broker -->
-  	<broker:broker id="broker" useJmx="true" persistent="false">
+  	<broker:broker id="broker" brokerName="${app.name}-broker" useJmx="true" persistent="false">
+  	  	<broker:managementContext>
+       		<broker:managementContext connectorPort="${jmx.port}" createConnector="false"/>
+    	</broker:managementContext>
 		<broker:systemUsage>
 	  		<broker:systemUsage>
 	  		  	<broker:memoryUsage>
@@ -80,11 +100,11 @@
 	  	</broker:systemUsage>
 	
         <broker:transportConnectors>
-            <broker:transportConnector uri="tcp://0.0.0.0:61636" />
+            <broker:transportConnector uri="tcp://0.0.0.0:${jms.port}" />
         </broker:transportConnectors>
     </broker:broker>
 
-	<broker:connectionFactory id="jmsConnectionFactory" brokerURL="vm://localhost:61636" />
+	<broker:connectionFactory id="jmsConnectionFactory" brokerURL="vm://localhost:${jms.port}" />
 
 	<bean id="jmsProducerConnectionFactory"
 	    class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop" depends-on="broker">
@@ -93,7 +113,7 @@
 
   <!-- lets configure the Camel ActiveMQ to use the embedded ActiveMQ broker declared above -->
   <bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
-    <property name="brokerURL" value="vm://localhost:61636"/>
+    <property name="brokerURL" value="vm://localhost:${jms.port}"/>
   </bean>
   
   <bean id="PROPAGATION_REQUIRED" class="org.apache.camel.spring.spi.SpringTransactionPolicy">

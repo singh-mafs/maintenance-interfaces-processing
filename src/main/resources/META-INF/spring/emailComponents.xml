@@ -46,11 +46,6 @@
 		<property name="templatePath" value="$vel{interface-success-email.resource.body.path}" />
 	</bean>
 	
-	<bean id="comdataBodyHelper" class="com.mikealbert.data.util.ComdataVelocityTemplateHelper">
-	    <property name="velocityEngine" ref="velocityEngine"/>
-	    <property name="comdataTemplatePath" value="$vel{comdata-success-email.resource.body.path}" />
-	</bean>
-
 	<bean id="interfaceSuccessEmail" class="com.mikealbert.service.util.email.Email" >
 		<property name="from" ref="from" />
 		<property name="simpleTo" value="$email{email.to.address}" />
@@ -58,10 +53,4 @@
 		<property name="htmlFmt" value="false" />
 	</bean>
 	
-	<bean id="comdataSuccessEmail" class="com.mikealbert.service.util.email.Email" >
-		<property name="from" ref="from" />
-		<property name="simpleTo" value="$email{email.to.address}" />
-		<property name="subject" value="Comdata Loading Data - Success" />
-		<property name="htmlFmt" value="false" />
-	</bean>
 </beans>

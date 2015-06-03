@@ -32,13 +32,13 @@
             ">
 
     <!-- camel -->
-    <import resource="camelContext.xml"/>
+    <import resource="classpath:META-INF/spring/camelContext.xml"/>
     
     <!-- batch jobs -->
-    <import resource="jobCommonCompsContext.xml"/>
-    <import resource="storeLocationJobContext.xml"/>
-    <import resource="vendorMaintCodeJobContext.xml"/>
-    <import resource="valvolineInstantStoreLocationJobContext.xml"/>
+    <import resource="classpath:META-INF/spring/jobCommonCompsContext.xml"/>
+    <import resource="classpath:META-INF/spring/storeLocationJobContext.xml"/>
+    <import resource="classpath:META-INF/spring/vendorMaintCodeJobContext.xml"/>
+    <import resource="classpath:META-INF/spring/valvolineInstantStoreLocationJobContext.xml"/>
 
     <!-- scans the classpath for annotated components (including @Repostory 
     and @Service  that will be auto-registered as Spring beans  -->          
