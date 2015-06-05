@@ -61,10 +61,26 @@ public class VendorInvoiceMappingProcess {
 			vendorInvoice.setDocDate(parseDate(vendorInvoiceVo.getDocDate()));
 		}
 		
-		vendorInvoice.setDocNo(vendorInvoiceVo.getDocNumber());
+		if (MALUtilities.isEmpty(vendorInvoiceVo.getDocNumber())) {
+			vendorInvoice.setDocNo(vendorInvoiceVo.getDocNumber());
+		} else{
+			vendorInvoice.setDocNo(vendorInvoiceVo.getDocNumber().toUpperCase());
+		}
+		
+		if (MALUtilities.isEmpty(vendorInvoiceVo.getPoNbr())) {
+			vendorInvoice.setJobNo(vendorInvoiceVo.getPoNbr());
+		} else{
+			vendorInvoice.setJobNo(vendorInvoiceVo.getPoNbr().toUpperCase());
+		}
+		
+		if (MALUtilities.isEmpty(vendorInvoiceVo.getVin())) {
+			vendorInvoice.setVin(vendorInvoiceVo.getVin());
+		} else {
+			vendorInvoice.setVin(vendorInvoiceVo.getVin().toUpperCase());
+		}
+		
 		vendorInvoice.setDocType(vendorInvoiceVo.getDocType());
 		vendorInvoice.setDriver(vendorInvoiceVo.getDriver());
-		vendorInvoice.setJobNo(vendorInvoiceVo.getPoNbr());
 		vendorInvoice.setLineCount(BigDecimal.valueOf(vendorInvoiceVo.getDetails().size()).longValue());
 		
 		//TODO: this is a error!
@@ -82,7 +98,6 @@ public class VendorInvoiceMappingProcess {
 		vendorInvoice.setServiceProviderNumber(vendorInvoiceVo.getStoreNbr());
 		vendorInvoice.setValidateInd("Y");
 		vendorInvoice.setVendorRef(vendorInvoiceVo.getVendorRef());
-		vendorInvoice.setVin(vendorInvoiceVo.getVin());
 		
 		//Pad unit numbers with leading zeros
 		if(MALUtilities.isNotEmptyString(vendorInvoiceVo.getUnitNo()) && MALUtilities.isNumber(vendorInvoiceVo.getUnitNo()) && vendorInvoiceVo.getUnitNo().length()>5){
