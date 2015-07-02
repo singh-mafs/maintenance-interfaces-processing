@@ -10,13 +10,10 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-
 import org.apache.camel.Handler;
 import org.apache.camel.Headers;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import antlr.StringUtils;
 
 import com.mikealbert.common.MalLogger;
 import com.mikealbert.common.MalLoggerFactory;

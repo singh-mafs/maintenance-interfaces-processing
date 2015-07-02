@@ -54,7 +54,8 @@
     <import resource="directMapMaintCodesJobContext.xml"/>
     <import resource="valvolineInstantInvoiceJobContext.xml"/>
     <import resource="pepBoysInvoiceJobContext.xml"/>
-    <import resource="jiffyLubeInvoiceJobContext.xml" /> 
+    <import resource="jiffyLubeInvoiceJobContext.xml" />
+    <import resource="bridgestoneFirestoneInvoiceJobContext.xml" />
 
 		 <!-- let Spring do its IoC stuff in this package -->
 		 <context:component-scan base-package="com.mikealbert" />

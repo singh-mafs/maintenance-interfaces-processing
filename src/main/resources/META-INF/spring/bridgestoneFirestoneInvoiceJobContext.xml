@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+	<!-- Job Definition -->
+	<batch:job id="bridgestoneFirestoneInvoiceJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="LoadBridgestoneFirestoneVendorInvoiceVO">
+			<batch:tasklet>
+				<batch:chunk reader="bridgestoneFirestoneReader"  processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>
+						<batch:include class="org.springframework.batch.item.UnexpectedInputException" />						
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>
+					<batch:streams >
+						<batch:stream ref="bridgestoneFirestoneFileItemReader" />
+					</batch:streams>			        
+				</batch:chunk>
+			</batch:tasklet>	
+			<batch:listeners>
+				<batch:listener ref="vendorInvoiceExceptionListener"/>
+				<batch:listener ref="execListenerCtxInjector" />
+			</batch:listeners>	
+		</batch:step>	
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>
+	</batch:job>
+ 		
+	<bean id="bridgestoneFirestoneReader"
+		class="com.mikealbert.batch.readers.AggregateHeaderDetailItemReader" scope="step">
+		<property name="itemReader" ref="bridgestoneFirestoneFileItemReader" />
+		<property name="checkPropertyName" value="recordType" />
+		<property name="checkPropertyValue" value="HDR" />
+		<property name="checkPropertyToHelperClass">
+			<map>
+				<entry key="H" value-ref="bridgestoneFirestoneFLTHelper" />
+				<entry key="D" value-ref="bridgestoneFirestoneDTLHelper" />
+				<entry key="TND" value-ref="bridgesoneFirestoneTNDHelper" />				
+			</map>
+		</property>
+	</bean>
+
+	<bean id="bridgestoneFirestoneFLTHelper" class="com.mikealbert.batch.mappers.mappinghelpers.CombineMappingHelper" />
+	<bean id="bridgestoneFirestoneDTLHelper" class="com.mikealbert.batch.mappers.mappinghelpers.AddMappingHelper" >
+		<property name="methodName" value="addDetail" />
+	</bean>
+	<bean id="bridgesoneFirestoneTNDHelper" class="com.mikealbert.batch.mappers.mappinghelpers.TaxAndRebateSplitMappingHelper" />
+
+	<bean id="bridgestoneFirestoneFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="strict" value="false" />
+		<property name="lineMapper" ref="bridgestoneFirestonePrefixMatchingLineMapper" />
+	</bean>
+	
+	<bean id="bridgestoneFirestonePrefixMatchingLineMapper" class="org.springframework.batch.item.file.mapping.PatternMatchingCompositeLineMapper">
+		<property name="tokenizers">
+			<map>
+				<entry key="2*" value-ref="bridgestoneFirestoneHeaderRecordTokenizer" />
+				<entry key="6*" value-ref="bridgestoneFirestoneFLTRecordTokenizer" />
+				<entry key="3*" value-ref="bridgestoneFirestoneDetailRecordTokenizer" />
+				<entry key="9*" value-ref="bridgestoneFirestoneTNDRecordTokenizer" />
+				<entry key="*"  value-ref="bridgestoneFirestoneNoRecordTokenizer" />
+			</map>
+		</property>
+		<property name="fieldSetMappers">
+			<map>
+				<entry key="2*" value-ref="bridgestoneFirestoneHeaderMapper" />
+				<entry key="6*" value-ref="bridgestoneFirestoneHeaderMapper" />
+				<entry key="3*" value-ref="bridgestoneFirestoneDetailMapper" />
+				<entry key="9*" value-ref="bridgestoneFirestoneDetailMapper" />
+				<entry key="*"  value-ref="noRecordFieldSetMapper" />
+			</map>
+		</property>		
+	</bean>
+	
+	<bean id="bridgestoneFirestoneHeaderRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value="|"/>
+		<property name="names" value="recordType,storeNbr,storeType,storeCity,storeState,
+		plannedDate,docDate,serviceLocation,firestoneAccountNo,docNumber,
+		invoiceWorkDate,invoiceLineNumber,extra1" />
+	</bean>
+	
+	<bean id="bridgestoneFirestoneFLTRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value="|"/>
+		<property name="names" value="recordType,requirementNumber,requirementText,
+		requirementData,serviceLocation,firestoneAccountNo,docNumber,
+		invoiceWorkDate,invoiceLineNumber,extra1" />
+	</bean>	
+
+	<bean id="bridgestoneFirestoneDetailRecordTokenizer"
+		class="com.mikealbert.batch.linetokenizers.RemoveQuoteCharacterDelimitedLineTokenizer">
+		<property name="delimiter" value="|"/>
+		<property name="names" value="recordType,qty,partServiceCode,partServiceDesc,
+		unitCost,exciseTax,billingClass,salesTaxCode,totalCost,serviceLocation,
+		firestoneAccountNo,docNumber,invoiceWorkDate,invoiceLineNumber,extra1" />
+	</bean>
+	
+	<bean id="bridgestoneFirestoneTNDRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value="|"/>
+		<property name="names" value="recordType,taxAmount,totalExciseTax,
+		totalAmountDue,discRebateAmt,truckTireIncentive,paymentDueDate,
+		totalCashDiscountAmt,volumnBonusAmt,serviceLocation,firestoneAccountNo,
+		docNumber,invoiceWorkDate,invoiceLineNumber,extra1" />
+	</bean>
+	
+	<bean id="bridgestoneFirestoneNoRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType" />
+		<property name="columns" value="1-1" />
+	</bean>		
+	
+	<bean id="bridgestoneFirestoneHeaderMapper" class="com.mikealbert.batch.mappers.BridgestoneFirestoneHeaderFieldSetMapper" />
+	<bean id="bridgestoneFirestoneDetailMapper" class="com.mikealbert.batch.mappers.BridgestoneFirestoneDetailFieldSetMapper" />
+	<bean id="noRecordFieldSetMapper" class="com.mikealbert.batch.mappers.NoRecordFieldSetMapper" />
+	
+</beans>
