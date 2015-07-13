@@ -67,12 +67,7 @@ public class BridgestoneFirestoneHeaderFieldSetMapper implements FieldSetMapper<
 				}
 				break;
 			case 9014: // License Plate Number
-				String licencePlate = "";
-				if (!MALUtilities.isEmpty(fieldSet.readString("requirementData")) && fieldSet.readString("requirementData").length() > 2) {
-					licencePlate = fieldSet.readString("requirementData").substring(3);
-				}
-				
-				vendorInvoiceHeader.setPlateNo(licencePlate);
+				vendorInvoiceHeader.setPlateNo(fieldSet.readString("requirementData"));
 				break;				
 			default:
 			}
