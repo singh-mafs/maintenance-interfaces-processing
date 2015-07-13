@@ -61,11 +61,14 @@ public class BridgestoneFirestoneHeaderFieldSetMapper implements FieldSetMapper<
 				vendorInvoiceHeader.setMileage(fieldSet.readString("requirementData"));
 				break;
 			case 600: // VIN
-				vendorInvoiceHeader.setVin(fieldSet.readString("requirementData"));
+			case 9008: // VIN
+				if(MALUtilities.isEmpty(vendorInvoiceHeader.getVin()) || requirementNumber.compareTo(600) == 0) {
+					vendorInvoiceHeader.setVin(fieldSet.readString("requirementData"));
+				}
 				break;
 			case 9014: // License Plate Number
 				String licencePlate = "";
-				if (!MALUtilities.isEmpty(fieldSet.readString("requirementData"))) {
+				if (!MALUtilities.isEmpty(fieldSet.readString("requirementData")) && fieldSet.readString("requirementData").length() > 2) {
 					licencePlate = fieldSet.readString("requirementData").substring(3);
 				}
 				
