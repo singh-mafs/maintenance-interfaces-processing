@@ -98,7 +98,7 @@ public class VendorInvoiceMappingProcess {
 		
 		//Pad unit numbers with leading zeros
 		if(MALUtilities.isNotEmptyString(vendorInvoiceVo.getUnitNo()) && MALUtilities.isNumber(vendorInvoiceVo.getUnitNo()) && vendorInvoiceVo.getUnitNo().length()>5){
-			vendorInvoice.setUnitNo(String.format("%1$#" + 8 + "s", vendorInvoiceVo.getUnitNo()).replace(" ","0"));
+			vendorInvoice.setUnitNo(String.format("%1$" + 8 + "s", vendorInvoiceVo.getUnitNo()).replace(" ","0"));
 		}else
 		{
 			vendorInvoice.setUnitNo(vendorInvoiceVo.getUnitNo());
