@@ -41,9 +41,7 @@ public class StoreLocationValidator implements Validator<StoreLocationVO> {
 			validationErrors.add(errMsg);  
 			fieldErrorMsgs.add(errMsg);
 		}else{
-			if(value.getStoreCode().length() > 25){/*
-				validationErrors.add("storeCode exceeds length 25. ");
-				fieldErrorMsgs.add("storeCode exceeds length 25");*/
+			if(value.getStoreCode().length() > 25){
 				errMsg = malMessage.getMessage("exceeds.length", "Store Code","25");
 				validationErrors.add(errMsg);
 				fieldErrorMsgs.add(errMsg);
@@ -194,6 +192,17 @@ public class StoreLocationValidator implements Validator<StoreLocationVO> {
 			fieldErrorMsgs = new ArrayList<String>();
 		}
         
+		if(!MALUtilities.isEmpty(value.getCountryCode()) && value.getCountryCode().length() > 80) {
+			errMsg = malMessage.getMessage("exceeds.length", "countryCode", "80");
+		    validationErrors.add(errMsg);
+		    fieldErrorMsgs.add(errMsg);			
+		}
+		
+		if(fieldErrorMsgs.size() > 0){
+			fieldErrors.put("countryCode", fieldErrorMsgs);
+			fieldErrorMsgs = new ArrayList<String>();
+		}
+		
 		if(MALUtilities.isEmpty(value.getZipCode())){
 			errMsg = malMessage.getMessage("required.field", "Zip Code");
 			validationErrors.add(errMsg);
@@ -204,10 +213,20 @@ public class StoreLocationValidator implements Validator<StoreLocationVO> {
 			    validationErrors.add(errMsg);
 			    fieldErrorMsgs.add(errMsg);
 			}
-			if(!value.getZipCode().matches("^\\d{5}(-\\d{4})?$")){
-				errMsg = malMessage.getMessage("must.matchWith", "Zip Code format" ,"00000-0000");
-				validationErrors.add("Zip code must be formatted 00000-0000");
-				fieldErrorMsgs.add("Zip code must be formatted 00000-0000");
+			
+			if(!MALUtilities.isEmpty(value.getCountryCode()) && value.getCountryCode().equalsIgnoreCase("CN")) {
+				if(!value.getZipCode().matches("^\\D\\d\\D\\s\\d\\D\\d$")) {
+					errMsg = malMessage.getMessage("must.matchWith", "Zip Code format" ,"[A-Z][0-9][A-Z] [0-9][A-Z][0-9]");
+					validationErrors.add("Zip code must be formatted [A-Z][0-9][A-Z] [0-9][A-Z][0-9]");
+					fieldErrorMsgs.add("Zip code must be formatted [A-Z][0-9][A-Z] [0-9][A-Z][0-9]");					
+				}
+			} else {
+				// validation checking on USA by default
+				if(!value.getZipCode().matches("^\\d{5}(-\\d{4})?$")){
+					errMsg = malMessage.getMessage("must.matchWith", "Zip Code format" ,"00000-0000");
+					validationErrors.add("Zip code must be formatted 00000-0000");
+					fieldErrorMsgs.add("Zip code must be formatted 00000-0000");
+				}
 			}
 		}
 	
@@ -256,17 +275,6 @@ public class StoreLocationValidator implements Validator<StoreLocationVO> {
 			fieldErrorMsgs = new ArrayList<String>();
 		}
 		
-//		if(MALUtilities.isEmpty(value.getClearanceInFeet())){	
-//			errMsg = malMessage.getMessage("required.field", "Clearance in Feet");
-//			validationErrors.add(errMsg);
-//			fieldErrorMsgs.add(errMsg);
-//		}else{
-//			if(value.getClearanceInFeet() > 99){
-//				errMsg = malMessage.getMessage("must.lessThen", "Clearance in Feet should be a whole number and" ,"99");
-//				validationErrors.add("Clearance In Feet must be a whole number less than 99");
-//				fieldErrorMsgs.add("Clearance In Feet must be a whole number less than 99");
-//			}
-//		}
 		if(!MALUtilities.isEmpty(value.getClearanceInFeet())){	
 			if(value.getClearanceInFeet() > 99){
 				errMsg = malMessage.getMessage("must.lessThen", "Clearance in Feet should be a whole number and" ,"99");

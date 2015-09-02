@@ -49,10 +49,13 @@ public class ValdiationExceptionListener {
 			
 			errorWriterTemplate.convertAndSend(item,new MessagePostProcessor() {
 					@Override
-					public Message postProcessMessage(Message message)
-							throws JMSException {
+					public Message postProcessMessage(Message message) throws JMSException {
+						String[] inFileParts	 = inputResource.split("\\\\");
+					    String   inputFolderName = inFileParts[inFileParts.length -4];
+
 						message.setLongProperty("parentProviderId", parentProviderId);
 						message.setObjectProperty("fieldErrors", fieldErrors);
+						message.setStringProperty("inputFolderName", inputFolderName);
 						return message;
 					}
 				});

@@ -18,6 +18,7 @@
 			<field name="mileage" required="false"  trim="true" />
 			<field name="plateNo" required="false"  trim="true" />
 			<field name="origDocNo" required="false"  trim="true" />
+			<field name="docDate" required="false" trim="true" minOccurs="0" />
    		</record>
 		<record name="D" getter="getDetails" setter="setDetails" class="com.mikealbert.data.vo.VendorInvoiceDetailsVO" 
 		  collection="list" minOccurs="1" maxOccurs="unbounded" order="2">

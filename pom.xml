@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mikealbert.processing</groupId>
   <artifactId>maintenance-interfaces</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <packaging>war</packaging>
 	<dependencies>  
 	  	<dependency>
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>com.mikealbert.data</groupId>
 		 	<artifactId>mafs-core-data</artifactId>
-		 	<version>1.4.9</version>
+		 	<version>1.5.1</version>
 		</dependency>
 	  	<dependency>
 			<groupId>com.mikealbert.service</groupId>

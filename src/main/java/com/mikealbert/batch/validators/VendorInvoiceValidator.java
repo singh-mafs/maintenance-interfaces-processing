@@ -385,12 +385,12 @@ public class VendorInvoiceValidator implements Validator<VendorInvoiceHeaderVO> 
             fieldErrorMsgs.add(errMsg);
           }else{
             if(!MALUtilities.isValidDecimalWMinMaxPrecision(detail.getQty(), 0, 2)){
-                errMsg = malMessage.getMessage("must.matchWith","Qty - Detail line " + i, "0000.00");
+                errMsg = malMessage.getMessage("must.matchWith", "Qty - Detail line " + i, "0000.00");
                 validationErrors.add(errMsg);
                 fieldErrorMsgs.add(errMsg);
             }
-            if(detail.getQty().length() > 5){
-              errMsg = malMessage.getMessage("exceeds.length", "Qty - Detail line " + i,"5");
+            if(detail.getQty().length() > 15){
+              errMsg = malMessage.getMessage("exceeds.length", "Qty - Detail line " + i, "15");
               validationErrors.add(errMsg);
               fieldErrorMsgs.add(errMsg);
             }

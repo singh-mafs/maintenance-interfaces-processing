@@ -47,7 +47,7 @@
 			<map>
 				<entry key="H" value-ref="bridgestoneFirestoneFLTHelper" />
 				<entry key="D" value-ref="bridgestoneFirestoneDTLHelper" />
-				<entry key="TND" value-ref="bridgesoneFirestoneTNDHelper" />				
+				<entry key="TND" value-ref="bridgestoneFirestoneTNDHelper" />				
 			</map>
 		</property>
 	</bean>
@@ -56,7 +56,7 @@
 	<bean id="bridgestoneFirestoneDTLHelper" class="com.mikealbert.batch.mappers.mappinghelpers.AddMappingHelper" >
 		<property name="methodName" value="addDetail" />
 	</bean>
-	<bean id="bridgesoneFirestoneTNDHelper" class="com.mikealbert.batch.mappers.mappinghelpers.TaxAndRebateSplitMappingHelper" />
+	<bean id="bridgestoneFirestoneTNDHelper" class="com.mikealbert.batch.mappers.mappinghelpers.TaxAndRebateSplitMappingHelper" />
 
 	<bean id="bridgestoneFirestoneFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
 		<property name="resource" value="#{jobParameters['inputResource']}" />

@@ -10,7 +10,7 @@ public class LocalFolderInputRoute extends RouteBuilder {
 	public void configure() throws Exception {
 		errorHandler(loggingErrorHandler("com.mikealbert.processing"));
 
-		from("file:{{files.input}}?recursive=true&flatten=false&minDepth=2&maxDepth=2&preMove=../.InProgress")
+		from("file:{{files.input}}?recursive=true&flatten=false&minDepth=2&maxDepth=2&preMove=./.InProgress")
 		.processRef("fileNameHandler")
 		.to("file:{{local.staged.dir}}")
 		.to("direct:stagedFiles");

@@ -7,6 +7,6 @@ public class BridgestoneFirestoneInputRoute extends RouteBuilder {
   @Override
   public void configure() throws Exception {
     from("{{bridgestoneFirestone.sftp.url}}")
-    .to("file:{{files.input}}\\Bridgestone_Firestone");
+    .to("file:{{files.input}}\\53_Bridgestone_Firestone");
   }
 }

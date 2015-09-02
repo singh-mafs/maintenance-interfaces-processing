@@ -75,7 +75,12 @@ public class StoreToProviderMappingHelper {
 		providerAddress.setRegion(storeLocation.getStateProv());
 		providerAddress.setPostcode(storeLocation.getZipCode());
 		providerAddress.setTownCity(storeLocation.getCity().toUpperCase());
-		providerAddress.setCountryCode(parent.getServiceProviderAddresses().get(0).getCountryCode());
+		
+		String countryCode = parent.getServiceProviderAddresses().get(0).getCountryCode();
+		if (!MALUtilities.isEmpty(storeLocation.getCountryCode())) {
+			countryCode = storeLocation.getCountryCode();
+		}
+		providerAddress.setCountryCode(countryCode);
 		providerAddress.setCountyCode(storeLocation.getCountyCode());
 	}
 	

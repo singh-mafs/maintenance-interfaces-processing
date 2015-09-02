@@ -57,7 +57,7 @@ public class VendorInvoiceProcessingRoute extends RouteBuilder {
 		from("jms:queue:errors.vendorInvoices?concurrentConsumers={{consumer.count}}")
 		.to("bean:vendorInvoiceErrorEnrichProcess")
 		.marshal(canonicalFormat)
-		.setHeader(Exchange.FILE_NAME, simple("\\${header.parentName}\\Errors\\Maintenance_Invoices_${date:now:yyyyMMdd}.err"))
+		.setHeader(Exchange.FILE_NAME, simple("\\${header.inputFolderName}\\Errors\\Maintenance_Invoices_${date:now:yyyyMMdd}.err"))
 		.to("file:{{files.input}}?fileExist=Append");
 		
 		//detect new codes

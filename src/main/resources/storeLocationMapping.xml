@@ -25,6 +25,7 @@
       <field name="city" required="false" trim="true" />
       <field name="stateProv" required="false" trim="true" />
       <field name="countyCode" required="false" trim="true" />
+      <field name="countryCode" required="false" trim="true" />
       <field name="operationCode" maxLength="1" trim="true" />
     </record>
   </stream>

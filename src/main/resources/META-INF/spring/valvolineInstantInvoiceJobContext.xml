@@ -10,21 +10,19 @@
                                  http://activemq.apache.org/schema/core 
                                  http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
 
-
-    <!-- Job Definition -->
-	<batch:job id="valvolineInstantInvoiceJob" incrementer="jobRunIncrementer"
-	        job-repository="jobRepository">	   
-		<batch:step id="loadValvolineVendorInvoiceVO">
+	<!-- Job Definition -->
+	<batch:job id="valvolineInstantInvoiceJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="LoadValvolineInstantVendorInvoiceVO">
 			<batch:tasklet>
-				<batch:chunk reader="valvolineInstantInvoiceReader" processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+				<batch:chunk reader="valvolineInstantReader"  processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
 					<batch:skippable-exception-classes>
 						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
-						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>						
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>
+						<batch:include class="org.springframework.batch.item.UnexpectedInputException" />						
 						<batch:include class="org.beanio.InvalidRecordException"/>
 					</batch:skippable-exception-classes>
 					<batch:streams >
-						<batch:stream ref="fileItemReader" />
-						
+						<batch:stream ref="valvolineInstantFileItemReader" />
 					</batch:streams>			        
 				</batch:chunk>
 			</batch:tasklet>	
@@ -37,50 +35,54 @@
 			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
 			<batch:listener ref="loadIdInitializingJobListener"/>
 			<batch:listener ref="statusMailNotificationListener"/>
-		</batch:listeners>								
+		</batch:listeners>
 	</batch:job>
-	
-	<bean id="valvolineInstantInvoiceReader"  class="com.mikealbert.batch.readers.MultiLineReader" scope="step">
-		<property name="fieldSetReader" ref="fileItemReader" />
-		<property name="headerMapper"   ref="headerFieldSetMapper" />
-		<property name="detailsMapper" ref="detailsFieldSetMapper" />
-	</bean>
-	
-	<bean id="headerFieldSetMapper"    class="com.mikealbert.batch.mappers.HeaderFieldSetMapper" scope="step" />
-	<bean id="detailsFieldSetMapper"  class="com.mikealbert.batch.mappers.DetailsFieldSetMapper" scope="step" />
-	
-
-	<bean id="fileItemReader"  class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
-		<property name="resource" value="#{jobParameters['inputResource']}" />
-	    <property name="strict" value="false" />
-		<property name="lineMapper">
-			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
-				<property name="lineTokenizer" ref="invoiceFileTokenizer" />
-				<property name="fieldSetMapper">
-					<bean class="org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper" />
-				</property>
-			</bean>
-		</property>
-	</bean>
-
-	
-	<bean id="invoiceFileTokenizer"  class="org.springframework.batch.item.file.transform.PatternMatchingCompositeLineTokenizer">
-		<property name="tokenizers">
+ 		
+	<bean id="valvolineInstantReader"
+		class="com.mikealbert.batch.readers.AggregateMultiLineItemReader" scope="step">
+		<property name="itemReader" ref="valvolineInstantFileItemReader" />
+		<property name="checkPropertyName" value="docNumber" />
+		<property name="checkPropertyToHelperClass">
 			<map>
-				
-				<entry key="*"    value-ref="defaultLineTokenizer" />
+				<entry key="combine" value-ref="valvolineInstantRecordHelper" />
 			</map>
 		</property>
 	</bean>
-	
-	
-	<bean id="defaultLineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
-		<property name="delimiter" value=","/>
-		<property name="names" value="INVNUM,INVDT,CUSTFIRSTNAME,CUSTLASTNAME,ADDRLINE1,ADDRLINE2,CITY,STCD,ZIPCD1,
-	                	CURRODOMETER,INVDISCAMT,PRETAXAMT,TOTALTAXAMT,TOTALDUEAMT,CURRDRIVERNAME,TAXEXEMPTID,PHONE,ZIPCD2,EMAIL,
-	                	STORENAME,STOREADDR1,STOREADDR2,STORECITY,STORESTCD,STOREZIPCD,STOREPHONE,MAKE,MODEL
-	                	,ENGINE,YEAR,LICENSEPLATEST,LICENSEPLATENUM,STORENUM,SUBTOTALAMT,FLTACNTID,FLTDESC,PRINTCOMMENTS
-	                	,FLTTOTALDISCAMT,PO,UNIT,FLEET,AUTHNUM,AUTHNAME,VIN,INVLINENUM,LINEAMT,RTLPRICE,QTY,ITEMDESC,QTYUOM,FLEETPRODUCTNO"/>            	                    	                    	                    
+
+	<bean id="valvolineInstantRecordHelper" class="com.mikealbert.batch.mappers.mappinghelpers.HeaderAndDetailSplitMappingHelper" />
+
+	<bean id="valvolineInstantFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="strict" value="false" />
+		<property name="lineMapper" ref="valvolineInstantPrefixMatchingLineMapper" />
 	</bean>
-		
+	
+	<bean id="valvolineInstantPrefixMatchingLineMapper" class="org.springframework.batch.item.file.mapping.PatternMatchingCompositeLineMapper">
+		<property name="tokenizers">
+			<map>
+				<entry key="*" value-ref="valvolineInstantRecordTokenizer" />
+			</map>
+		</property>
+		<property name="fieldSetMappers">
+			<map>
+				<entry key="*" value-ref="valvolineInstantRecordMapper" />
+			</map>
+		</property>		
+	</bean>
+	
+	<bean id="valvolineInstantRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value=","/>
+		<property name="names" value="docNumber,docDate,custFirstName,custLastName,addrLine1,addrLine2,
+		city,stcd,zipcd1,mileage,couponVal,preTaxAmount,taxAmount,totalDueAmt,driver,taxExemptId,phone,
+		zipcd2,email,storeName,storeAddr1,storeAddr2,storeCity,storecd,storeZipcd,storePhone,make,model,
+		engine,year,livencePlateSt,plateNo,storeNbr,subTotalAmt,fltAcntId,fltDesc,printComments,discountAmount,
+		poNbr,unitNo,fleet,authNum,authName,vin,lineId,totalCost,unitCost,qty,partServiceDesc,qtyUom,fleetProductNo" />
+	</bean>
+	
+	<!-- #{jobParameters[parentProviderId]} -->
+	<bean id="valvolineInstantRecordMapper" class="com.mikealbert.batch.mappers.ValvolineInstantFieldSetMapper">
+		<property name="parentProviderId" value="32699"/>
+	</bean>
+	
 </beans>
