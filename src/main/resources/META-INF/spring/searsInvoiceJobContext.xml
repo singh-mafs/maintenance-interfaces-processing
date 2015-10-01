@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+	<!-- Job Definition -->
+	<batch:job id="searsInvoiceJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="LoadSearsVendorInvoiceVO">
+			<batch:tasklet>
+				<batch:chunk reader="searsReader"  processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>
+						<batch:include class="org.springframework.batch.item.UnexpectedInputException" />
+						<batch:include class="org.beanio.InvalidRecordException"/>
+					</batch:skippable-exception-classes>
+					<batch:streams >
+						<batch:stream ref="searsFileItemReader" />
+					</batch:streams>			        
+				</batch:chunk>
+			</batch:tasklet>	
+			<batch:listeners>
+				<batch:listener ref="vendorInvoiceExceptionListener"/>
+				<batch:listener ref="execListenerCtxInjector" />
+			</batch:listeners>	
+		</batch:step>	
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>
+	</batch:job>
+ 		
+	<bean id="searsReader"
+		class="com.mikealbert.batch.readers.AggregateHeaderDetailItemReader" scope="step">
+		<property name="itemReader" ref="searsFileItemReader" />
+		<property name="checkPropertyName" value="recordType" />
+		<property name="checkPropertyValue" value="H" />
+		<property name="checkPropertyToHelperClass" >
+			<map>
+				<entry key="D" value-ref="searsDTLHelper" />			
+			</map>		
+		</property>
+	</bean>
+	
+	<bean id="searsDTLHelper" class="com.mikealbert.batch.mappers.mappinghelpers.AddMappingHelper" >
+		<property name="methodName" value="addDetail" />
+	</bean> 
+
+	<bean id="searsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="strict" value="false" />
+		<property name="lineMapper" ref="searsPrefixMatchingLineMapper" />
+	</bean>
+	
+	<bean id="searsPrefixMatchingLineMapper" class="org.springframework.batch.item.file.mapping.PatternMatchingCompositeLineMapper">
+		<property name="tokenizers">
+			<map>
+				<entry key="H*" value-ref="searsHeaderRecordTokenizer" />
+				<entry key="D*" value-ref="searsDetailRecordTokenizer" />
+				<entry key="*"  value-ref="searsNoRecordTokenizer" />
+			</map>
+		</property>
+		<property name="fieldSetMappers">
+			<map>
+				<entry key="H*" value-ref="searsHeaderMapper" />
+				<entry key="D*" value-ref="searsDetailMapper" />
+				<entry key="*"  value-ref="noRecordFieldSetMapper" />
+			</map>
+		</property>		
+	</bean>
+	
+	<bean id="searsHeaderRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType,unitNo,vin,poNbr,storeNbr,docNumber,driver,plannedDate,mileage,plateNo,salesTaxAmount" />
+		<property name="columns" value="1-1,8-15,220-236,200-219,186-191,16-26,256-285,27-34,249-255,237-246,69-77" />
+	</bean>
+
+	<bean id="searsDetailRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType,prePartServiceCode,partServiceCode,partServiceDesc,qty,unitCost,totalCost" />
+		<property name="columns" value="1-1,2-4,42-47,14-38,48-52,53-61,76-84" />
+	</bean>
+	
+	<bean id="searsNoRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.FixedLengthTokenizer">
+		<property name="strict" value="false" />
+		<property name="names" value="recordType" />
+		<property name="columns" value="1-1" />
+	</bean>		
+	
+	<bean id="searsHeaderMapper" class="com.mikealbert.batch.mappers.SearsHeaderFieldSetMapper" />
+	<bean id="searsDetailMapper" class="com.mikealbert.batch.mappers.SearsDetailFieldSetMapper" />
+	<bean id="noRecordFieldSetMapper" class="com.mikealbert.batch.mappers.NoRecordFieldSetMapper" />
+	
+</beans>

@@ -58,7 +58,8 @@ public class VendorInvoiceProcessingRoute extends RouteBuilder {
 		.to("bean:vendorInvoiceErrorEnrichProcess")
 		.marshal(canonicalFormat)
 		.setHeader(Exchange.FILE_NAME, simple("\\${header.inputFolderName}\\Errors\\Maintenance_Invoices_${date:now:yyyyMMdd}.err"))
-		.to("file:{{files.input}}?fileExist=Append");
+		.to("file:{{files.input}}?fileExist=Append")
+		.to("file:{{local.errors.dir}}?fileExist=Append");
 		
 		//detect new codes
 		//create VOs for those new code

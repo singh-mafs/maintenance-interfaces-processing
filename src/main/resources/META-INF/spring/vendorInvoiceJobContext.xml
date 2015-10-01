@@ -10,18 +10,20 @@
                                  http://activemq.apache.org/schema/core 
                                  http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
 
-
-    <!-- Job Definition -->
-	<batch:job id="vendorInvoiceJob" incrementer="jobRunIncrementer"
-	        job-repository="jobRepository">	   
-		<batch:step id="loadVendorInvoiceVO">
+	<!-- Job Definition -->
+	<batch:job id="vendorInvoiceJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="LoadVendorInvoiceVO">
 			<batch:tasklet>
-				<batch:chunk reader="vendorInvoiceReader" processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
+				<batch:chunk reader="vendorReader"  processor="invoiceValidatingRecAndLineIdProcessor" writer="vendorInvoiceWriter" skip-limit="2000000" commit-interval="1">
 					<batch:skippable-exception-classes>
 						<batch:include class="org.springframework.batch.item.validator.ValidationException"/>
-						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>						
+						<batch:include class="org.springframework.batch.item.file.transform.FlatFileFormatException"/>
+						<batch:include class="org.springframework.batch.item.UnexpectedInputException" />
 						<batch:include class="org.beanio.InvalidRecordException"/>
-					</batch:skippable-exception-classes>			        
+					</batch:skippable-exception-classes>
+					<batch:streams >
+						<batch:stream ref="vendorFileItemReader" />
+					</batch:streams>			        
 				</batch:chunk>
 			</batch:tasklet>	
 			<batch:listeners>
@@ -33,14 +35,61 @@
 			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
 			<batch:listener ref="loadIdInitializingJobListener"/>
 			<batch:listener ref="statusMailNotificationListener"/>
-		</batch:listeners>								
+		</batch:listeners>
 	</batch:job>
-	
-	<!-- Readers -->		
-	<bean id="vendorInvoiceReader" class="org.beanio.spring.BeanIOFlatFileItemReader" scope="step">
-	    <property name="streamMapping" value="classpath:/vendorInvoiceMapping.xml" />
-	    <property name="streamName" value="vendorInvoiceIdealFile" />
-		<property name="resource" value="#{jobParameters['inputResource']}" />
+ 		
+	<bean id="vendorReader"
+		class="com.mikealbert.batch.readers.AggregateHeaderDetailItemReader" scope="step">
+		<property name="itemReader" ref="vendorFileItemReader" />
+		<property name="checkPropertyName" value="recordType" />
+		<property name="checkPropertyValue" value="H" />
+		<property name="checkPropertyToHelperClass" >
+			<map>
+				<entry key="D" value-ref="vendorDTLHelper" />			
+			</map>		
+		</property>
 	</bean>
+	
+	<bean id="vendorDTLHelper" class="com.mikealbert.batch.mappers.mappinghelpers.AddNonZeroDetailMappingHelper" /> 
+
+	<bean id="vendorFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="#{jobParameters['inputResource']}" />
+	    <property name="strict" value="false" />
+		<property name="lineMapper" ref="vendorPrefixMatchingLineMapper" />
+	</bean>
+	
+	<bean id="vendorPrefixMatchingLineMapper" class="org.springframework.batch.item.file.mapping.PatternMatchingCompositeLineMapper">
+		<property name="tokenizers">
+			<map>
+				<entry key="H*" value-ref="vendorHeaderRecordTokenizer" />
+				<entry key="D*" value-ref="vendorDetailRecordTokenizer" />
+			</map>
+		</property>
+		<property name="fieldSetMappers">
+			<map>
+				<entry key="H*" value-ref="vendorHeaderMapper" />
+				<entry key="D*" value-ref="vendorDetailMapper" />
+			</map>
+		</property>		
+	</bean>
+
+	<bean id="vendorHeaderRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="strict" value="false" />
+		<property name="delimiter" value=","/>
+		<property name="names" value="recordType,unitNo,vin,poNbr,storeNbr,docType,
+		docNumber,driver,vendorRef,plannedDate,mileage,plateNo,origDocNo,docDate" />
+	</bean>
+	
+	<bean id="vendorDetailRecordTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="strict" value="false" />
+		<property name="delimiter" value=","/>
+		<property name="names" value="recordType,partServiceCode,partServiceDesc,qty,
+		unitCost,taxAmount,exciseTax,discRebateAmt,totalCost" />
+	</bean>	
+	
+	<bean id="vendorHeaderMapper" class="com.mikealbert.batch.mappers.VendorInvoiceHeaderFieldSetMapper" />
+	<bean id="vendorDetailMapper" class="com.mikealbert.batch.mappers.VendorInvoiceDetailFieldSetMapper" />
 	
 </beans>
