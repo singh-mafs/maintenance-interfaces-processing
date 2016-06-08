@@ -119,12 +119,29 @@
 	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenaceRequestTypes"/>	
 	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRequestStatuses"/>
 	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCategories"/>	  	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="costAvoidanceReasons"/>	
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCodes"/>	
 	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRechargeCodes"/>
+   	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRepairReasons"/>	      
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="costAvoidanceReasons"/>
 	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintenanceCodes"/>	
 	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="documentTransactionTypes"/>	            	            		      	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="resourceRoleMap"/>	            		      	      	       	      
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="resourceRoleMap"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="modelTypes"/>	
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="financeParameterCategories"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintCodeFinParamMapping"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviders"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="optionAccessoryCategory"/>		      	      	      	      	            		      	      	       	      
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="clientSystemsWithPOCsExceptSystemAll"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="repairTypeWorkshopCapabilityCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vehicleTypeWorkshopCapabilityCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="carModelTypeMakes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintnenaceGroups"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalRepairTypeWorkshopCapabilityCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalVehicleTypeWorkshopCapabilityCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlExternalRepairTypeWorkshopCapabilityCodes"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalServiceProviderMaintnenaceGroups"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlExternalServiceProviderMaintnenaceGroups"/>
+	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="supplierVLMaintenanceSupplierCategoryCodes"/>
 	    </set>
 	  </property>
 	</bean>

@@ -45,7 +45,6 @@ public class StatusMailJobListener implements JobExecutionListener {
     	int validationErrors = 0;
     	int writeSuccess = 0;
     	
-    	
     	JobParameters params = jobExecution.getJobInstance().getJobParameters();
     	inputFile = params.getString("inputResource");
     	executionDateTime = jobExecution.getStartTime().toString();
