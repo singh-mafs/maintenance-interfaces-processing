@@ -135,11 +135,16 @@
          For example see UserDaoJpa-->
     <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
 
-	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
-        <property name="url" value="${db.url}" />
-        <property name="username" value="${db.username}" />
-        <property name="password" value="${db.password}" />
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+	       <property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
+	       <property name="jdbcUrl" value="${db.url}" />
+	       <property name="user" value="${db.username}" />
+	       <property name="password" value="${db.password}" />
+	       <property name="minPoolSize" value="${db.pool.minSize}" />
+	       <property name="maxPoolSize" value="${db.pool.maxSize}" />
+		   <property name="maxIdleTime" value="${db.pool.maxIdleTime}" />
+		   <property name="testConnectionOnCheckout" value="${db.pool.testConnectionOnCheckout}" />
+		   <property name="preferredTestQuery" value="${db.pool.preferredTestQuery}" />
 	</bean>
 	
 	<bean id="entityManagerFactory"  
@@ -157,7 +162,7 @@
              <list>
                  <value>com.mikealbert.data.entity</value>
              </list>
-         </property>           
+         </property>          
     </bean>  
     
     <!-- bean post-processor for JPA annotations -->
