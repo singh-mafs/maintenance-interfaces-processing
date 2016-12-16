@@ -38,7 +38,7 @@ public class DetectNewVendorMaintCodes {
 		ServiceProvider parent = storeToProviderMappingHelper.getParentFromProperties(headers);
 		for(ServiceProviderInvoiceDetail detail : serviceProviderInvoice.getDetails()){
 			//if tax code is is filled in; then skip. also if vendor code is empty (which is the case for invoice discounts) also skip
-			if(!detail.getVendorCode().equalsIgnoreCase(TX_CODE) || MALUtilities.isEmptyString(detail.getVendorCode())){
+			if(MALUtilities.isEmptyString(detail.getVendorCode()) || !detail.getVendorCode().equalsIgnoreCase(TX_CODE)){
 				//see if the code currently exists; if it does not then create and return it
 				isExists = maintCodeService.isServiceProviderCodeAdded(detail.getVendorCode(), parent.getServiceProviderId(), false);
 				if(!isExists){
