@@ -5,9 +5,11 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 
+
 import org.apache.camel.Handler;
 import org.apache.camel.Headers;
 import org.springframework.stereotype.Component;
+
 import com.mikealbert.common.MalLogger;
 import com.mikealbert.common.MalLoggerFactory;
 import com.mikealbert.data.entity.MaintenanceCode;
@@ -17,6 +19,7 @@ import com.mikealbert.data.util.MaintCodeMappingHelper;
 import com.mikealbert.data.util.StoreToProviderMappingHelper;
 import com.mikealbert.data.vo.VendorMaintCodeVO;
 import com.mikealbert.exception.MalBusinessException;
+import com.mikealbert.util.MALUtilities;
 
 
 @Component("vendorMaintCodeAddMappingProcess")
@@ -36,7 +39,8 @@ public class VendorMaintCodeAddMappingProcess {
 		ServiceProvider provider = storeToProviderMappingHelper.getParentFromProperties(headers);
 		
 		ServiceProviderMaintenanceCode vendorCode = new ServiceProviderMaintenanceCode();
-		vendorCode.setCode(vendorMaintCode.getPartServiceCode().toUpperCase());
+		if (MALUtilities.isNotEmptyString(vendorMaintCode.getPartServiceCode()))
+			vendorCode.setCode(vendorMaintCode.getPartServiceCode().toUpperCase());
 		vendorCode.setDescription(vendorMaintCode.getPartServiceDesc());
 		MaintenanceCode maintCode = maintCodeMappingHelper.findMatchingMaintCode(vendorMaintCode.getPartServiceDesc());
 		vendorCode.setMaintenanceCode(maintCode);

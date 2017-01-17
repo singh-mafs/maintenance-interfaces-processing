@@ -30,6 +30,7 @@ public class DetectNewVendorMaintCodes {
 	@Resource MaintenanceCodeService maintCodeService;
 	
 	private static final String TX_CODE = "TX";
+	private static final String DISCOUNT = "D";
 
 	@Handler
 	public List<VendorMaintCodeVO> mapVendorMaintCode(ServiceProviderInvoiceHeader serviceProviderInvoice, @Headers Map<String, Object> headers){
@@ -37,8 +38,8 @@ public class DetectNewVendorMaintCodes {
 		List<VendorMaintCodeVO> newCodes = new ArrayList<VendorMaintCodeVO>();
 		ServiceProvider parent = storeToProviderMappingHelper.getParentFromProperties(headers);
 		for(ServiceProviderInvoiceDetail detail : serviceProviderInvoice.getDetails()){
-			//if tax code is is filled in; then skip. also if vendor code is empty (which is the case for invoice discounts) also skip
-			if(MALUtilities.isEmptyString(detail.getVendorCode()) || !detail.getVendorCode().equalsIgnoreCase(TX_CODE)){
+			//if tax code is filled in; then skip. line type is D (DISCOUNT) also skip
+			if((MALUtilities.isEmptyString(detail.getVendorCode()) && !DISCOUNT.equalsIgnoreCase(detail.getLineType())) || !TX_CODE.equalsIgnoreCase(detail.getVendorCode())){
 				//see if the code currently exists; if it does not then create and return it
 				isExists = maintCodeService.isServiceProviderCodeAdded(detail.getVendorCode(), parent.getServiceProviderId(), false);
 				if(!isExists){
