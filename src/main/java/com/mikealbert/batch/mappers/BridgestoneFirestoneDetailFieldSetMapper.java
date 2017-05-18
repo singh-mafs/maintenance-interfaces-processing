@@ -39,6 +39,7 @@ public class BridgestoneFirestoneDetailFieldSetMapper implements FieldSetMapper<
 				String exciseTax = MALUtilities.parseDecimalNumberAndRound(fieldSet.readString("exciseTax"), 2);
 				try{
 					BigDecimal exciseTaxDecimal = new BigDecimal(exciseTax);
+					//HD-147 We don't have to make a change for HD-147 here because we are hard coding quantity as 1.
 					exciseTax = exciseTaxDecimal.abs().toString();
 				} catch(NumberFormatException e) {}
 				vendorInvoiceDetail.setExciseTax(exciseTax);
@@ -46,6 +47,13 @@ public class BridgestoneFirestoneDetailFieldSetMapper implements FieldSetMapper<
 			} else {
 				vendorInvoiceDetail.setQty(fieldSet.readString("qty"));
 				vendorInvoiceDetail.setExciseTax(MALUtilities.parseDecimalNumberAndRound(fieldSet.readString("exciseTax"), 2));
+				//Change made for HD147 Saket 04/18/2017. BridgeStone sends us excise tax for unit. we have to multiply it with quantity to get excise for line item
+				if (!MALUtilities.isEmpty(vendorInvoiceDetail.getExciseTax())) {
+					BigDecimal  vExciseTax   = new BigDecimal(vendorInvoiceDetail.getExciseTax());
+					BigDecimal  vQty   = new BigDecimal(vendorInvoiceDetail.getQty());
+					vExciseTax = vExciseTax.multiply(vQty);
+					vendorInvoiceDetail.setExciseTax(vExciseTax.toString());
+				}
 				vendorInvoiceDetail.setUnitCost(MALUtilities.parseDecimalNumberAndRound(fieldSet.readString("unitCost"), 2));
 				vendorInvoiceDetail.setTotalCost(totalCost);
 			}
