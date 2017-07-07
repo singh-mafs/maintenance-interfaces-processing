@@ -28,6 +28,7 @@ public class MaintenanceRequestCompleteHandler {
 			// versionTS cannot be serialized as a message
 			// because it is not part of the public interface to this object (it is always null)
 			MaintenanceRequest fromDb = maintRequestService.getMaintenanceRequestByMrqId(req.getMrqId());
+			fromDb.setPayeeAccount(maintRequestService.getPayeeAccount(fromDb.getAccountCode(), fromDb.getAccountType(), fromDb.getcId()));
 			// fromDb.getServiceProvider().getServiceProviderId()
 			// find the Corporate Entity associated with the Payee Account, this will be used as the CID along with the user for validation when completing the PO.
 			//TODO: find out why Payee Account is sometimes null
