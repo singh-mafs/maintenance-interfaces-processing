@@ -46,6 +46,7 @@
     <import resource="emailComponents.xml"/>
     
     <!-- batch jobs -->
+    <import resource="deliveringDealerJobContext.xml"/> 
     <import resource="jobCommonCompsContext.xml"/>
     <import resource="storeLocationJobContext.xml"/>
     <import resource="vendorMaintCodeJobContext.xml"/>
@@ -80,7 +81,7 @@
 				</property>
 		</bean>
 
-
+	
 
   <!-- lets configure the ActiveMQ JMS broker -->
   	<broker:broker id="broker" brokerName="${app.name}-broker" useJmx="true" persistent="false">
@@ -177,47 +178,7 @@
     <tx:annotation-driven  transaction-manager="transactionManager"/>
     
    	<!-- cache configuration -->
-	<cache:annotation-driven/>
-    <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
-	  <property name="caches">
-	    <set>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="titleCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="driverManualStatusCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="addressTypeCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="uomCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="driverAllocCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="odometerReadingCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="phoneNumberTypes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="relationshipTypes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenaceRequestTypes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRequestStatuses"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCategories"/>	  	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCodes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRechargeCodes"/>
-   	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRepairReasons"/>	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="costAvoidanceReasons"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintenanceCodes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="documentTransactionTypes"/>	            	            		      	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="resourceRoleMap"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="modelTypes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="financeParameterCategories"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintCodeFinParamMapping"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviders"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="optionAccessoryCategory"/>		      	      	      	      	            		      	      	       	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="clientSystemsWithPOCsExceptSystemAll"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="repairTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vehicleTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="carModelTypeMakes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintnenaceGroups"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalRepairTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalVehicleTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlExternalRepairTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalServiceProviderMaintnenaceGroups"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlExternalServiceProviderMaintnenaceGroups"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="supplierVLMaintenanceSupplierCategoryCodes"/>
-	    </set>
-	  </property>
-	</bean>
+    <import resource="classpath:cacheContext.xml"/>
     
     <!-- Quartz Job Scheduler -->	
     <bean id="maSchedulerJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 

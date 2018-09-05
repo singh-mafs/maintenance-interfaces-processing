@@ -35,6 +35,7 @@
     <import resource="classpath:META-INF/spring/camelContext.xml"/>
     
     <!-- batch jobs -->
+    <import resource="classpath:META-INF/spring/deliveringDealerJobContext.xml"/>
     <import resource="classpath:META-INF/spring/jobCommonCompsContext.xml"/>
     <import resource="classpath:META-INF/spring/storeLocationJobContext.xml"/>
     <import resource="classpath:META-INF/spring/vendorMaintCodeJobContext.xml"/>
@@ -57,7 +58,7 @@
 
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
-        <property name="url" value="jdbc:oracle:thin:@svc-dev-db-dev1:1522:DEV2" />
+        <property name="url" value="jdbc:oracle:thin:@svc-dev-db-dev1:1522:DEV1" />
         <property name="username" value="AUTO" />
         <property name="password" value="Mation13" />
 	</bean>

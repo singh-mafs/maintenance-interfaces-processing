@@ -30,6 +30,8 @@ public class JobParamHandler {
 			ex.getOut().setHeader("inputResource", stagedResouceName);
 			ex.getOut().setHeader("parentProviderId", Long.parseLong(parentProviderStr));
 			ex.getOut().setHeader("parentProviderNumber", parentProviderNumber);
+			ex.getOut().setHeader("make", in.getHeader("make") != null ? in.getHeader("make") : null);
+			ex.getOut().setHeader("folderName", in.getHeader("folderName") != null ? in.getHeader("folderName") : null);
 			logger.info("Calling Bath Job for : " + stagedResouceName);				
 		}
 	}

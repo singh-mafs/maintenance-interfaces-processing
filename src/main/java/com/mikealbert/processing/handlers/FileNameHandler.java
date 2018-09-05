@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.mikealbert.common.MalLogger;
 import com.mikealbert.common.MalLoggerFactory;
+import com.mikealbert.data.dao.MakeDAO;
+import com.mikealbert.data.entity.Make;
 import com.mikealbert.data.entity.ServiceProvider;
 import com.mikealbert.service.ServiceProviderService;
 
@@ -16,6 +18,7 @@ import com.mikealbert.service.ServiceProviderService;
 public class FileNameHandler implements Processor {
     
   @Resource ServiceProviderService serviceProviderService;
+  @Resource MakeDAO makeDAO;	
   
   private MalLogger logger = MalLoggerFactory.getLogger(this.getClass());
 
@@ -25,6 +28,9 @@ public class FileNameHandler implements Processor {
     Message out = ex.getOut();
     Object  bdy = in.getBody();
 
+    Make make = null;
+    ServiceProvider 	parent = null;
+    String      		outFileName;
     if(bdy != null) {
       String      		fullPath      		= in.getHeader("camelfilepath").toString();
       String      		relativePath    	= in.getHeader("camelfilerelativepath").toString();
@@ -32,19 +38,32 @@ public class FileNameHandler implements Processor {
       String      		parentPart      	= inFileParts[inFileParts.length -4];
       String      		fileNamePart    	= inFileParts[inFileParts.length -1];
       Long      		serviceProviderId   = new Long(parentPart.split("_")[0].toString());
-      ServiceProvider 	parent        		= serviceProviderService.getServiceProvider(serviceProviderId);
-      String      		outFileName     	= "SUP_" + parent.getServiceProviderId() + "-" + fileNamePart;
-
-      out.setHeaders(in.getHeaders());
-      out.setBody(bdy);
-      out.setMessageId(in.getMessageId());
-
+      
+      if(parentPart.toLowerCase().contains("delivering")){
+    	  make = makeDAO.findOne(Long.valueOf(serviceProviderId));
+    	  outFileName     	= "MAK_" + make.getMakId() + "-" + fileNamePart;  
+    	  out.setHeaders(in.getHeaders());
+          out.setBody(bdy);
+          out.setMessageId(in.getMessageId());
+    	  out.setHeader("parentProviderNumber", make.getMakId());
+    	  out.setHeader("make", make.getMakeDesc());
+    	  out.setHeader("folderName", parentPart);
+      }else{
+    	  parent        		= serviceProviderService.getServiceProvider(serviceProviderId);
+          outFileName     		= "SUP_" + parent.getServiceProviderId() + "-" + fileNamePart;  
+          out.setHeaders(in.getHeaders());
+          out.setBody(bdy);
+          out.setMessageId(in.getMessageId());
+          out.setHeader("parentProviderNumber", parent.getServiceProviderNumber());
+          
+      }
+      
       // set the output filename using java code logic, notice that this is done by setting
       // a special header property of the out exchange
       out.setHeader("CamelFileName", outFileName);
 
       // TODO: should I create a separate handler? pass the service provider number in the header as well
-      out.setHeader("parentProviderNumber", parent.getServiceProviderNumber());
+      
 
       logger.info("Staging file - " + fullPath + " : renamed as " + outFileName);
     }

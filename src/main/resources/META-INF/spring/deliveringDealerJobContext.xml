@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:batch="http://www.springframework.org/schema/batch" 	   
+             xmlns:broker="http://activemq.apache.org/schema/core"      
+	         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/batch
+                                 http://www.springframework.org/schema/batch/spring-batch.xsd
+                                 http://activemq.apache.org/schema/core 
+                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+
+  <bean id="deliveringDealerMapper" class="com.mikealbert.batch.mappers.DeliveringDealerMapper" scope="prototype" />
+    
+	<batch:job id="deliveringDealerJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="deliveringDealerStepToyota" >
+			<batch:tasklet >
+				<batch:chunk reader="cvsFileItemReader" processor="deliveringDealerProcessor" writer="deliveringDealerWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.file.FlatFileParseException"/>						
+						<batch:include class="com.mikealbert.exception.MalException"/>
+					</batch:skippable-exception-classes>	
+				</batch:chunk>
+			</batch:tasklet>
+			<batch:listeners>
+				<batch:listener ref="deliveringDealerJobListener"/>
+				<batch:listener ref="deliveringDealerSkipListener"/>
+			</batch:listeners>	  
+		</batch:step>
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>
+	</batch:job>
+
+	<bean id="deliveringDealerJobListener" class="com.mikealbert.batch.listeners.DeliveringDealerJobListener" scope="step" />
+	<bean id="deliveringDealerSkipListener" class="com.mikealbert.batch.listeners.DeliveringDealerSkipListener" />
+
+	<bean id="cvsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+	 	<property name="linesToSkip" value="1" />
+		<property name="resource" value="#{jobParameters['inputResource']}" /> 
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+			  <!-- split it -->
+				<property name="lineTokenizer">
+					<bean
+					  class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="makeCode,area,areaDescription,contactName,tedContactPhone,email,dealerName,address,city,state,zip,dealerPhone" />
+					</bean>
+			 </property>
+			 <property name="fieldSetMapper">   
+			  <!-- map to an object -->
+				  <bean
+				    class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+					<property name="prototypeBeanName" value="deliveringDealerMapper" />
+				  </bean>			
+			  </property>
+			</bean>
+		 </property>
+	</bean>
+
+	<!-- Processor -->
+	<bean id="deliveringDealerProcessor" class="com.mikealbert.batch.processors.DeliveringDealerProcessor" scope="step" />
+	
+	<bean id="deliveringDealerWriter" class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <property name="dataSource" ref="dataSource" />
+        <property name="sql">
+            <value>
+                <![CDATA[        
+                    insert into WILLOW2K.potential_supplier(MAKE_CODE, AREA, AREA_DESCRIPTION, CONTACT_NAME, CONTACT_PHONE, CONTACT_EMAIL, SUPPLIER_NAME, TELEPHONE_NUMBER, ADDRESS,TOWN_CITY,REGION,POSTCODE,FAX_NUMBER, SUPPLIER_EXIST_YN, MAK_MAK_ID, NCV_BATCH,CV_BATCH,VERSIONTS, CREATED_DATE, PROCESSED_FILE_NAME)
+                    							 values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ]]>
+            </value>
+        </property>
+ 
+        <property name="ItemPreparedStatementSetter" ref="ItemPreparedStatementSetter">
+        </property>
+	</bean>
+  
+	<bean id="ItemPreparedStatementSetter" class="com.mikealbert.batch.writers.DeliveringDealerPreparedStatementSetter" />
+	
+	
+	
+	<batch:job id="nissanDeliveringDealerJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="deliveringDealerStepNissan" >
+			<batch:tasklet >
+				<batch:chunk reader="nissanItemReader" processor="deliveringDealerProcessor" writer="deliveringDealerWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.file.FlatFileParseException"/>						
+						<batch:include class="com.mikealbert.exception.MalException"/>
+					</batch:skippable-exception-classes>	
+				</batch:chunk>
+			</batch:tasklet>
+			<batch:listeners>
+				<batch:listener ref="deliveringDealerJobListener"/>
+				<batch:listener ref="deliveringDealerSkipListener"/>
+			</batch:listeners>
+		</batch:step>
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>
+	</batch:job>
+	
+	<bean id="nissanItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+	 	<property name="linesToSkip" value="1" />
+		<property name="resource" value="#{jobParameters['inputResource']}" /> 
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+			  <!-- split it -->
+				<property name="lineTokenizer">
+					<bean
+					  class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="makeCode,dealerName,contactName,dealerPhone,address,city,state,zip,region,district,email" />
+					</bean>
+			 </property>
+			 <property name="fieldSetMapper">   
+			  <!-- map to an object -->
+				  <bean
+				    class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+					<property name="prototypeBeanName" value="deliveringDealerMapper" />
+				  </bean>			
+			  </property>
+			</bean>
+		 </property>
+	</bean>
+	
+	
+	<batch:job id="nissanDeliveringDealerNcvJob" incrementer="jobRunIncrementer" job-repository="jobRepository">
+		<batch:step id="deliveringDealerStepNissanNcv" >
+			<batch:tasklet >
+				<batch:chunk reader="nissanNcvItemReader" processor="deliveringDealerProcessor" writer="deliveringDealerWriter" skip-limit="2000000" commit-interval="1">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.file.FlatFileParseException"/>						
+						<batch:include class="com.mikealbert.exception.MalException"/>
+					</batch:skippable-exception-classes>	
+				</batch:chunk>
+			</batch:tasklet>
+			<batch:listeners>
+				<batch:listener ref="deliveringDealerJobListener"/>
+				<batch:listener ref="deliveringDealerSkipListener"/>
+			</batch:listeners>
+		</batch:step>
+		<batch:listeners>
+			<batch:listener ref="sysTimeRecordIdInitializingJobListener"/>
+			<batch:listener ref="loadIdInitializingJobListener"/>
+			<batch:listener ref="statusMailNotificationListener"/>
+		</batch:listeners>
+	</batch:job>
+	
+	<bean id="nissanNcvItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+	 	<property name="linesToSkip" value="1" />
+		<property name="resource" value="#{jobParameters['inputResource']}" /> 
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+			  <!-- split it -->
+				<property name="lineTokenizer">
+					<bean
+					  class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="makeCode,dealerName,address,city,state,zip,dealerPhone,fax,region,district,email" />
+					</bean>
+			 </property>
+			 <property name="fieldSetMapper">   
+			  <!-- map to an object -->
+				  <bean
+				    class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+					<property name="prototypeBeanName" value="deliveringDealerMapper" />
+				  </bean>			
+			  </property>
+			</bean>
+		 </property>
+	</bean>
+</beans>

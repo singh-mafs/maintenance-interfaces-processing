@@ -9,6 +9,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.mikealbert.service.util.VelocityTemplateHelper;
 import com.mikealbert.service.util.email.Email;
@@ -27,6 +28,9 @@ public class StatusMailJobListener implements JobExecutionListener {
     private VelocityTemplateHelper mailBodyHelper;
     private Email mailMessage;
  
+    @Value("$email{email.to.address.delivering.dealer}")
+	private String deliveringDealerEmail;
+    
     @Override
     public void afterJob(JobExecution jobExecution) {
         String exitCode = jobExecution.getExitStatus().getExitCode();
@@ -49,11 +53,17 @@ public class StatusMailJobListener implements JobExecutionListener {
     	inputFile = params.getString("inputResource");
     	executionDateTime = jobExecution.getStartTime().toString();
     	
+    	
     	Collection<StepExecution> jobStepResults = jobExecution.getStepExecutions();
     	for(StepExecution step : jobStepResults){
-    		if(step.getStepName().toUpperCase().startsWith("LOAD")){
+    		if(step.getStepName().toUpperCase().startsWith("LOAD") 
+    				|| step.getStepName().toUpperCase().contains("DELIVERINGDEALERSTEP")){
         		readWriteErrors = step.getReadSkipCount() + step.getWriteSkipCount();
-        		writeSuccess = step.getWriteCount();
+        		if(step.getStepName().toUpperCase().contains("DELIVERINGDEALERSTEP")){
+        			writeSuccess = step.getWriteCount() + step.getFilterCount();
+        		}else{
+        			writeSuccess = step.getWriteCount();
+        		}
         		validationErrors = step.getProcessSkipCount();
         		totalRecords = step.getReadCount() + step.getReadSkipCount();
         		break;
@@ -69,6 +79,18 @@ public class StatusMailJobListener implements JobExecutionListener {
     	data.put("writeSuccess", writeSuccess);
 
     	mailMessage.setMessage(mailBodyHelper.processTemplate(data));
+    	
+    	if(jobExecution.getJobInstance().getJobName().toUpperCase().contains("DELIVERINGDEALER")){
+    		mailMessage.getTo().clear();
+    		mailMessage.setSimpleTo(deliveringDealerEmail);
+    		
+    		if(totalRecords == 0){
+    			mailMessage.setSubject("Delivering Dealer File Loading Data - Failure");
+    			mailMessage.setMessage("Failure: " + inputFile + " is either corrupt or empty");
+    		}else{
+    			mailMessage.setSubject("Delivering Dealer File Loading Data - Success");
+    		}
+		}
     	mailSendService.sendEmail(mailMessage);
     }
  
@@ -95,6 +117,12 @@ public class StatusMailJobListener implements JobExecutionListener {
 	}
 	public void setMailMessage(Email mailMessage) {
 		this.mailMessage = mailMessage;
+	}
+	public String getDeliveringDealerEmail() {
+		return deliveringDealerEmail;
+	}
+	public void setDeliveringDealerEmail(String deliveringDealerEmail) {
+		this.deliveringDealerEmail = deliveringDealerEmail;
 	}
 
 }

@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import org.apache.camel.DynamicRouter;
 import org.apache.camel.Headers;
 import org.apache.camel.Properties;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.mikealbert.exception.MalException;
 import com.mikealbert.util.MALUtilities;
@@ -25,6 +26,9 @@ public class ConfigurableFileRoutingProcess {
 	
 	@Resource Map<String, List<String>> providerFileToProcessingJobMap;
 
+	@Value("${files.input.delivering.dealer}")
+	private String deliveringDealerFolder; 
+	
 	@DynamicRouter
 	public String determineRoute(@Headers Map<String, Object> headers, @Properties Map<String, Object> properties){
 		// if we have already routed this request (storeLocationVO) skip it
@@ -59,7 +63,38 @@ public class ConfigurableFileRoutingProcess {
 		String targetJob;
 		String inputResourceUpper = headers.get("inputResource").toString().toUpperCase();
 		String targetRoute = "";		
-
+		String fileName = inputResourceUpper.substring(inputResourceUpper.lastIndexOf("\\") + 1, inputResourceUpper.length());
+		
+		
+		// DeliverigDealer Job execution
+		if(inputResourceUpper.contains(deliveringDealerFolder.toUpperCase())){
+			String folderName = headers.get("folderName").toString().toUpperCase();
+			
+			if(folderName.contains("DELIVERING") 
+					&& folderName.contains("NISSAN") 
+					&& folderName.contains("NCV")
+					&& fileName.contains("NISSAN")
+					&& fileName.contains("NCV")
+					&& fileName.substring(fileName.lastIndexOf(".") + 1,fileName.length()).equalsIgnoreCase("CSV")){
+				targetRoute = "spring-batch:" + "nissanDeliveringDealerNcvJob";
+			}
+			else if(folderName.contains("DELIVERING") && folderName.contains("NISSAN") && !folderName.contains("NCV")
+					&& fileName.contains("NISSAN")
+					&& !fileName.contains("NCV")
+					&& fileName.substring(fileName.lastIndexOf(".") + 1,fileName.length()).equalsIgnoreCase("CSV")){
+				targetRoute = "spring-batch:" + "nissanDeliveringDealerJob";
+			}else if(folderName.contains("DELIVERING") && folderName.contains("TOYOTA")
+					&& fileName.contains("TOYOTA") 
+					&& fileName.substring(fileName.lastIndexOf(".") + 1,fileName.length()).equalsIgnoreCase("CSV")){
+				targetRoute = "spring-batch:" + "deliveringDealerJob";
+			}
+			if(!MALUtilities.isEmpty(targetRoute))
+				return targetRoute;
+			else
+				throw new MalException("generic.error", 
+						new String[] { "The File/Resources name does not match to a high level route pattern of DELIVERING, TOYOTA, NISSAN, NCV  : " + inputResourceUpper});
+		}
+		
 		// for a file type (derived from the file/path name)
 		if(inputResourceUpper.contains("STORE") || inputResourceUpper.contains("LOCAT")){
 			// send to a target route (stored externally)
@@ -129,5 +164,13 @@ public class ConfigurableFileRoutingProcess {
 		}
 				
 		return jobName;
+	}
+
+	public String getDeliveringDealerFolder() {
+		return deliveringDealerFolder;
+	}
+
+	public void setDeliveringDealerFolder(String deliveringDealerFolder) {
+		this.deliveringDealerFolder = deliveringDealerFolder;
 	}
 }
