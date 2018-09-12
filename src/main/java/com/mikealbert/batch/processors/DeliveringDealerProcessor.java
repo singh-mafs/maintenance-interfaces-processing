@@ -219,11 +219,6 @@ public class DeliveringDealerProcessor<T> implements ItemProcessor<DeliveringDea
 					}
 				}
 				
-				if(MALUtilities.convertYNToBoolean(deliveringDealerObj.getSupplierExistsYN())){
-					query = entityManager.createNativeQuery("Update suppliers set inactive_ind= 'N', versionts = sysdate where sup_id in "
-														+ "(select distinct(sup_sup_id) from supplier_franchises where make_code = '"+ deliveringDealerObj.getMakeCode() + "' and mak_id = " + parentProviderId + ")");
-					query.executeUpdate();
-				}
 				return null; // do not insert already existing row.
 			}
 			

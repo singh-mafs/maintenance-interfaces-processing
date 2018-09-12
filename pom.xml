@@ -21,12 +21,12 @@
 	<dependency>
 		<groupId>com.mikealbert.data</groupId>
 	 	<artifactId>mafs-core-data</artifactId>
-	 	<version>1.7.31</version>
+	 	<version>1.7.32</version>
 	</dependency>
   	<dependency>
 		<groupId>com.mikealbert.service</groupId>
 		<artifactId>mafs-core-services</artifactId>
-		<version>1.7.31</version>
+		<version>1.7.32</version>
 	</dependency>
     <dependency>
       <groupId>com.mikealbert.batch</groupId>
