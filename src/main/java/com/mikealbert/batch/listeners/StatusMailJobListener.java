@@ -11,6 +11,8 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.mikealbert.common.MalLogger;
+import com.mikealbert.common.MalLoggerFactory;
 import com.mikealbert.service.util.VelocityTemplateHelper;
 import com.mikealbert.service.util.email.Email;
 import com.mikealbert.service.util.email.EmailService;
@@ -24,12 +26,18 @@ import com.mikealbert.service.util.email.EmailService;
  */
 
 public class StatusMailJobListener implements JobExecutionListener {
+	
+	private MalLogger logger = MalLoggerFactory.getLogger(this.getClass());
+	
     private EmailService mailSendService;
     private VelocityTemplateHelper mailBodyHelper;
     private Email mailMessage;
  
     @Value("$email{email.to.address.delivering.dealer}")
 	private String deliveringDealerEmail;
+    
+    @Value("$email{email.to.address}")
+	private String invoiceGroupEmail;
     
     @Override
     public void afterJob(JobExecution jobExecution) {
@@ -79,18 +87,25 @@ public class StatusMailJobListener implements JobExecutionListener {
     	data.put("writeSuccess", writeSuccess);
 
     	mailMessage.setMessage(mailBodyHelper.processTemplate(data));
-    	
-    	if(jobExecution.getJobInstance().getJobName().toUpperCase().contains("DELIVERINGDEALER")){
-    		mailMessage.getTo().clear();
-    		mailMessage.setSimpleTo(deliveringDealerEmail);
-    		
+    	String emailTo = "";    	
+    	if(jobExecution.getJobInstance().getJobName().toUpperCase().contains("DELIVERINGDEALER")){    		
+    		emailTo = deliveringDealerEmail;
     		if(totalRecords == 0){
     			mailMessage.setSubject("Delivering Dealer File Loading Data - Failure");
     			mailMessage.setMessage("Failure: " + inputFile + " is either corrupt or empty");
     		}else{
     			mailMessage.setSubject("Delivering Dealer File Loading Data - Success");
     		}
+		}else {
+			emailTo = invoiceGroupEmail;			
+			mailMessage.setSubject("MVI Loading Data - Success");					
 		}
+    	
+    	mailMessage.getTo().clear();
+		mailMessage.setSimpleTo(emailTo);
+		
+    	logger.info("Sending final notification email to group : " + emailTo);
+    	
     	mailSendService.sendEmail(mailMessage);
     }
  
