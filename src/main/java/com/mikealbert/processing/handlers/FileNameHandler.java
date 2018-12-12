@@ -40,7 +40,7 @@ public class FileNameHandler implements Processor {
       Long      		serviceProviderId   = new Long(parentPart.split("_")[0].toString());
       
       if(parentPart.toLowerCase().contains("delivering")){
-    	  make = makeDAO.findOne(Long.valueOf(serviceProviderId));
+    	  make = makeDAO.findById(Long.valueOf(serviceProviderId)).orElse(null);
     	  outFileName     	= "MAK_" + make.getMakId() + "-" + fileNamePart;  
     	  out.setHeaders(in.getHeaders());
           out.setBody(bdy);

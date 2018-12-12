@@ -8,25 +8,9 @@
 
 	<!-- ======= Property Configurers ======= -->
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	  <property name="location" value="file:///${maintenance-interfaces_config}/email.properties" />
+	  <property name="location" value="file:///${mafs_conf}/maintenance-interfaces/email.properties" />
 	  <property name="placeholderPrefix" value="$email{" />
 	</bean>	
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	  <property name="location" value="classpath:velocity.properties" />
-	  <property name="placeholderPrefix" value="$vel{" />
-	</bean>	
-
-	<!-- ======= Velocity Engine ======= -->	
-	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
-	    <property name="velocityProperties">
-	        <props>
-	            <prop key="resource.loader">class</prop>
-	            <prop key="class.resource.loader.class">
-	                org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-	            </prop>
-	        </props>
-	    </property>
-	</bean>
 	
 	<!-- ======= Mail Sender Beans ======= -->	
 	<bean id="javaMailSenderSimple" class="org.springframework.mail.javamail.JavaMailSenderImpl">
@@ -40,11 +24,6 @@
 	<bean id="from" class="com.mikealbert.service.util.email.EmailAddress">
 		<property name="address" value="$email{email.from.address}" />	
 	</bean>		
-	
-	<bean id="bodyHelper" class="com.mikealbert.service.util.VelocityTemplateHelper">
-		<property name="velocityEngine" ref="velocityEngine" />
-		<property name="templatePath" value="$vel{interface-success-email.resource.body.path}" />
-	</bean>
 	
 	<bean id="interfaceSuccessEmail" class="com.mikealbert.service.util.email.Email" >
 		<property name="from" ref="from" />

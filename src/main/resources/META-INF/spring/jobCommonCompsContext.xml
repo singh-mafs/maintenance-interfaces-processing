@@ -8,7 +8,7 @@
                                  http://www.springframework.org/schema/batch
                                  http://www.springframework.org/schema/batch/spring-batch.xsd
                                  http://activemq.apache.org/schema/core 
-                                 http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
+                                 http://activemq.apache.org/schema/core/activemq-core.xsd">
 	
     <bean id="batchTransactionManager" lazy-init="true"
         class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -28,7 +28,7 @@
     
     <bean id="providerFileToProcessingJobMap" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject">
-  			<ref local="providerFileToProcessingJobMapFactory" /> 
+  			<ref bean="providerFileToProcessingJobMapFactory" /> 
   		</property>
 		<property name="targetMethod">
   			<value>getMap</value> 
@@ -78,7 +78,6 @@
 	<!-- (Other) Listeners -->
 	<bean id="statusMailNotificationListener" class="com.mikealbert.batch.listeners.StatusMailJobListener">
 		<property name="mailSendService" ref="emailService"/>
-		<property name="mailBodyHelper" ref="bodyHelper"/>
 		<property name="mailMessage" ref="interfaceSuccessEmail"/>
 	</bean>
 
@@ -92,10 +91,10 @@
       class="org.springframework.batch.item.support.CompositeItemProcessor" scope="step">
 	  <property name="delegates">
 	    <list>
-	      <ref local="loadIdProcessor"/>
-	   	  <ref local="recordIdDerivingProcessor"/>
-	   	  <ref local="detailLineIdDerivingProcessor"/>
-	      <ref local="vendorInvoiceValidator"/>
+	      <ref bean="loadIdProcessor"/>
+	   	  <ref bean="recordIdDerivingProcessor"/>
+	   	  <ref bean="detailLineIdDerivingProcessor"/>
+	      <ref bean="vendorInvoiceValidator"/>
 	    </list>
 	  </property>
 	</bean>
@@ -108,8 +107,8 @@
       class="org.springframework.batch.item.support.CompositeItemProcessor" scope="step">
 	  <property name="delegates">
 	    <list>
-	   	  <ref local="storeLocationOpCodeProcessor"/>
-	      <ref local="storeLocationValidator"/>
+	   	  <ref bean="storeLocationOpCodeProcessor"/>
+	      <ref bean="storeLocationValidator"/>
 	    </list>
 	  </property>
 	</bean>

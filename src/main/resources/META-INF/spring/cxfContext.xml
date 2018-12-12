@@ -4,12 +4,11 @@
        xmlns:cxf="http://camel.apache.org/schema/cxf"
        xsi:schemaLocation=" 
          http://www.springframework.org/schema/beans  
-         http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+         http://www.springframework.org/schema/beans/spring-beans.xsd
          http://camel.apache.org/schema/cxf  
          http://camel.apache.org/schema/cxf/camel-cxf.xsd">
 
-  <import resource="classpath:META-INF/cxf/cxf.xml"/>
-  
+
   <cxf:cxfEndpoint id="vendorLocationReprocessing" 
                    address="http://0.0.0.0:${http.port}/webservices/vendorLocationReprocessing"
                    serviceClass="com.mikealbert.ws.VendorLocationReprocessing"/>
@@ -18,11 +17,11 @@
                    address="http://0.0.0.0:${http.port}/webservices/vendorCodeReprocessing"
                    serviceClass="com.mikealbert.ws.VendorCodeReprocessing"/>
                    
-  <cxf:cxfEndpoint id="interfaceErrorsBrowsing" 
+   <cxf:cxfEndpoint id="interfaceErrorsBrowsing" 
                    address="http://0.0.0.0:${http.port}/webservices/interfaceErrorsBrowsing"
                    serviceClass="com.mikealbert.ws.InterfaceErrorsBrowsing"/>
                    
   <cxf:cxfEndpoint id="interfaceErrorsRemoval" 
                    address="http://0.0.0.0:${http.port}/webservices/interfaceErrorsRemoval"
-                   serviceClass="com.mikealbert.ws.InterfaceErrorsRemoval"/>      
+                   serviceClass="com.mikealbert.ws.InterfaceErrorsRemoval"/>         
 </beans>

@@ -16,17 +16,17 @@
             http://www.springframework.org/schema/aop
             http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx
-            http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+            http://www.springframework.org/schema/tx/spring-tx.xsd
             http://www.springframework.org/schema/jdbc
-            http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+            http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
             http://www.springframework.org/schema/context
-            http://www.springframework.org/schema/context/spring-context-3.1.xsd
+            http://www.springframework.org/schema/context/spring-context.xsd
             http://www.springframework.org/schema/data/jpa 
             http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
             http://www.springframework.org/schema/cache 
             http://www.springframework.org/schema/cache/spring-cache.xsd
             http://www.springframework.org/schema/security 
-            http://www.springframework.org/schema/security/spring-security-3.1.xsd
+            http://www.springframework.org/schema/security/spring-security.xsd
             http://www.springframework.org/schema/batch
             http://www.springframework.org/schema/batch/spring-batch.xsd  
             ">
@@ -58,7 +58,7 @@
 
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
-        <property name="url" value="jdbc:oracle:thin:@svc-dev-db-dev1:1522:DEV1" />
+        <property name="url" value="jdbc:oracle:thin:@svc-dev-db-DEV1:1522:DEV1" />
         <property name="username" value="AUTO" />
         <property name="password" value="Mation13" />
 	</bean>
@@ -104,48 +104,9 @@
     <!-- use declarative transaction management  -->
     <tx:annotation-driven  transaction-manager="transactionManager"/>
     
-   	<!-- cache configuration -->
-	<cache:annotation-driven/>
-    <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
-	  <property name="caches">
-	    <set>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="titleCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="driverManualStatusCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="addressTypeCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="uomCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="driverAllocCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="odometerReadingCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="phoneNumberTypes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="relationshipTypes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenaceRequestTypes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRequestStatuses"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCategories"/>	  	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceCodes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRechargeCodes"/>
-   	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintenanceRepairReasons"/>	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="costAvoidanceReasons"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintenanceCodes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="documentTransactionTypes"/>	            	            		      	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="resourceRoleMap"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="modelTypes"/>	
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="financeParameterCategories"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="maintCodeFinParamMapping"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviders"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="optionAccessoryCategory"/>		      	      	      	      	            		      	      	       	      
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="clientSystemsWithPOCsExceptSystemAll"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="repairTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vehicleTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="carModelTypeMakes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="serviceProviderMaintnenaceGroups"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalRepairTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalVehicleTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlExternalRepairTypeWorkshopCapabilityCodes"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlInternalServiceProviderMaintnenaceGroups"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="vlExternalServiceProviderMaintnenaceGroups"/>
-	      <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="supplierVLMaintenanceSupplierCategoryCodes"/>
-	    </set>
-	  </property>
-	</bean>
+    <!-- cache configuration -->
+    <import resource="classpath:cacheContext.xml"/>
+
     
     <!-- Resource Bundle -->
 	<bean id="messageSource"

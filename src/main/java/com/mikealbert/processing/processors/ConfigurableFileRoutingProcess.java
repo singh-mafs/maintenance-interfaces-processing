@@ -28,8 +28,12 @@ public class ConfigurableFileRoutingProcess {
 
 	@Value("${files.input.delivering.dealer}")
 	private String deliveringDealerFolder; 
+
+	@Value("${process.locationsAndCodes}")
+	private boolean processLocationsAndCodes; 
+
 	
-	@DynamicRouter
+//	@DynamicRouter
 	public String determineRoute(@Headers Map<String, Object> headers, @Properties Map<String, Object> properties){
 		// if we have already routed this request (storeLocationVO) skip it
 		if(getInvokedMarker(properties)){
@@ -96,7 +100,7 @@ public class ConfigurableFileRoutingProcess {
 		}
 		
 		// for a file type (derived from the file/path name)
-		if(inputResourceUpper.contains("STORE") || inputResourceUpper.contains("LOCAT")){
+		if((inputResourceUpper.contains("STORE") || inputResourceUpper.contains("LOCAT")) && processLocationsAndCodes){
 			// send to a target route (stored externally)
 			targetJob = findJobNameByIndex(LOCS_JOB_IDX,targetJobs);
 			if(MALUtilities.isNotEmptyString(targetJob)){
@@ -105,7 +109,7 @@ public class ConfigurableFileRoutingProcess {
 				throw new MalException("generic.error", 
 					new String[] { "There are no processing jobs mapped for the Store Locations of Provider Number : " + parentProviderNumber});
 			}
-		}else if(inputResourceUpper.contains("MAP")){
+		}else if(inputResourceUpper.contains("MAP") && processLocationsAndCodes){
 			// send to a target route (stored externally)
 			targetJob = findJobNameByIndex(MAPPING_JOB_IDX,targetJobs);
 			if(MALUtilities.isNotEmptyString(targetJob)){
@@ -114,7 +118,7 @@ public class ConfigurableFileRoutingProcess {
 				throw new MalException("generic.error", 
 					new String[] { "There are no processing jobs mapped for the Maintenance Codes of Provider Number : " + parentProviderNumber});
 			}
-		}else if(inputResourceUpper.contains("CODE")){
+		}else if(inputResourceUpper.contains("CODE") && processLocationsAndCodes){
 			// send to a target route (stored externally)
 			targetJob = findJobNameByIndex(CODES_JOB_IDX,targetJobs);
 			if(MALUtilities.isNotEmptyString(targetJob)){
@@ -134,7 +138,7 @@ public class ConfigurableFileRoutingProcess {
 			}
 		}else{
 			throw new MalException("generic.error", 
-					new String[] { "The File/Resources name does not match to a high level route pattern of STORE,LOCAT,CODE,INVOICE  : " + inputResourceUpper});
+					new String[] { "Cannot process the incoming file.  The File/Resources name ("+ inputResourceUpper +") does not match a known pattern or proceessing is not turned on for Locations and Codes"});
 		}
 
 		return targetRoute;

@@ -1,10 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
-  <display-name>maintenance-interfaces-processing</display-name>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+  <display-name>maintenance-interfaces</display-name>
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>classpath:/META-INF/spring/camelContext.xml</param-value>
   </context-param>
+    <context-param>
+     <param-name>isLog4jAutoInitializationDisabled</param-name>
+     <param-value>true</param-value>
+  </context-param>
+  <context-param>
+     <param-name>isLog4jContextSelectorNamed</param-name>
+     <param-value>true</param-value>
+  </context-param>
+  <context-param>
+    <param-name>log4jContextName</param-name>
+    <param-value>maintenance-interfaces</param-value>
+  </context-param>
+  <context-param>
+    <param-name>log4jConfiguration</param-name>
+    <param-value>file:///${mafs_conf}/maintenance-interfaces/log4j2.xml</param-value>
+  </context-param>  
+
+  <env-entry>
+	<env-entry-name>log4j/context-name</env-entry-name>
+	<env-entry-type>java.lang.String</env-entry-type>
+	<env-entry-value>log4j</env-entry-value>
+  </env-entry>   
+
+  <listener>
+    <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
+  </listener>
   <listener>
     <listener-class>
 		org.springframework.web.context.ContextLoaderListener
@@ -15,6 +41,19 @@
 		org.springframework.web.context.request.RequestContextListener
 	</listener-class>
   </listener>
+      <filter>
+	<filter-name>log4jServletFilter</filter-name>
+	<filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
+  </filter>
+  <filter-mapping>
+	<filter-name>log4jServletFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+	<dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+    <dispatcher>INCLUDE</dispatcher>
+	<dispatcher>ERROR</dispatcher>
+	<dispatcher>ASYNC</dispatcher>
+  </filter-mapping>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.htm</welcome-file>

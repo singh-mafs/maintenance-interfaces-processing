@@ -20,21 +20,21 @@
          http://www.springframework.org/schema/aop
          http://www.springframework.org/schema/aop/spring-aop.xsd
          http://www.springframework.org/schema/tx
-         http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+         http://www.springframework.org/schema/tx/spring-tx.xsd
          http://www.springframework.org/schema/jdbc
-         http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+         http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
          http://www.springframework.org/schema/context
-         http://www.springframework.org/schema/context/spring-context-3.1.xsd
+         http://www.springframework.org/schema/context/spring-context.xsd
          http://www.springframework.org/schema/data/jpa 
          http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
          http://www.springframework.org/schema/cache 
          http://www.springframework.org/schema/cache/spring-cache.xsd
          http://www.springframework.org/schema/security 
-         http://www.springframework.org/schema/security/spring-security-3.1.xsd        
+         http://www.springframework.org/schema/security/spring-security.xsd        
          http://camel.apache.org/schema/spring 
          http://camel.apache.org/schema/spring/camel-spring.xsd
          http://activemq.apache.org/schema/core 
-         http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd
+         http://activemq.apache.org/schema/core/activemq-core.xsd
          http://www.springframework.org/schema/jee 
          http://www.springframework.org/schema/jee/spring-jee.xsd
          ">
@@ -72,11 +72,15 @@
 		 <!-- AspectJ annotation -->
 		<aop:aspectj-autoproxy />  
 		
+		<context:property-placeholder ignore-unresolvable="true" ignore-resource-not-found="true" 
+			location="classpath:buildInfo.properties,classpath:velocity.properties"  />
+		
+		
 		<bean id="bridgePropertyPlaceholder"
 			class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
 				<property name="locations">
 					<list>
-						<value>file:///${maintenance-interfaces_config}/application.properties</value>
+						<value>file:///${mafs_conf}/maintenance-interfaces/application.properties</value>
 					</list>
 				</property>
 		</bean>
@@ -107,7 +111,9 @@
         </broker:transportConnectors>
     </broker:broker>
 
-	<broker:connectionFactory id="jmsConnectionFactory" brokerURL="vm://localhost:${jms.port}" />
+	<broker:connectionFactory id="jmsConnectionFactory" 
+		brokerURL="vm://localhost:${jms.port}" 
+		trustAllPackages="true" />
 
 	<bean id="jmsProducerConnectionFactory"
 	    class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop" depends-on="broker">
@@ -177,8 +183,9 @@
     <!-- use declarative transaction management  -->
     <tx:annotation-driven  transaction-manager="transactionManager"/>
     
-   	<!-- cache configuration -->
+    <!-- cache configuration -->
     <import resource="classpath:cacheContext.xml"/>
+    
     
     <!-- Quartz Job Scheduler -->	
     <bean id="maSchedulerJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
@@ -221,18 +228,5 @@
          <property name="defaultEncoding" value="UTF-8"/>
          <property name="cacheSeconds" value ="5"/>
 	</bean>	
-	
-	<bean id="log4jInitialization"
- 		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-	   <property name="targetClass"
-	      value="org.springframework.util.Log4jConfigurer" />
-	   <property name="targetMethod" value="initLogging" />
-	   <property name="arguments">
-	      <list>
-	         <value>file:///${maintenance-interfaces_config}/log4j.properties</value>
-	      </list>
-	   </property>
-	</bean>
-
-  	
+		  	
 </beans>

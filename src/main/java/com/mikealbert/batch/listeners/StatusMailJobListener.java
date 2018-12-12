@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -13,9 +15,10 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.mikealbert.common.MalLogger;
 import com.mikealbert.common.MalLoggerFactory;
-import com.mikealbert.service.util.VelocityTemplateHelper;
 import com.mikealbert.service.util.email.Email;
 import com.mikealbert.service.util.email.EmailService;
+
+import com.mikealbert.service.VelocityService;
 
 /**
  * 
@@ -27,11 +30,15 @@ import com.mikealbert.service.util.email.EmailService;
 
 public class StatusMailJobListener implements JobExecutionListener {
 	
+	@Resource VelocityService velocityService;
+	
 	private MalLogger logger = MalLoggerFactory.getLogger(this.getClass());
 	
     private EmailService mailSendService;
-    private VelocityTemplateHelper mailBodyHelper;
     private Email mailMessage;
+ 
+ 	@Value("${interface-success-email.resource.body.path}")
+	private String mailBody;
  
     @Value("$email{email.to.address.delivering.dealer}")
 	private String deliveringDealerEmail;
@@ -57,7 +64,7 @@ public class StatusMailJobListener implements JobExecutionListener {
     	int validationErrors = 0;
     	int writeSuccess = 0;
     	
-    	JobParameters params = jobExecution.getJobInstance().getJobParameters();
+		JobParameters params = jobExecution.getJobParameters();
     	inputFile = params.getString("inputResource");
     	executionDateTime = jobExecution.getStartTime().toString();
     	
@@ -86,7 +93,7 @@ public class StatusMailJobListener implements JobExecutionListener {
     	data.put("validationErrors", validationErrors);
     	data.put("writeSuccess", writeSuccess);
 
-    	mailMessage.setMessage(mailBodyHelper.processTemplate(data));
+    	mailMessage.setMessage(velocityService.getMergedTemplate(data, mailBody));
     	String emailTo = "";    	
     	if(jobExecution.getJobInstance().getJobName().toUpperCase().contains("DELIVERINGDEALER")){    		
     		emailTo = deliveringDealerEmail;
@@ -120,12 +127,6 @@ public class StatusMailJobListener implements JobExecutionListener {
 	}
 	public void setMailSendService(EmailService mailSendService) {
 		this.mailSendService = mailSendService;
-	}
-	public VelocityTemplateHelper getMailBodyHelper() {
-		return mailBodyHelper;
-	}
-	public void setMailBodyHelper(VelocityTemplateHelper mailBodyHelper) {
-		this.mailBodyHelper = mailBodyHelper;
 	}
 	public Email getMailMessage() {
 		return mailMessage;
