@@ -115,22 +115,17 @@ public class DeliveringDealerJobListener implements StepExecutionListener  {
 				
 				String deleteQueryString =  null;
 				if(ncvCount > 0 && cvCount > 0){
-					/*String updateQueryString = "UPDATE suppliers "
-												+ "SET inactive_ind= 'Y', versionts = sysdate where sup_id in ( "
-												+ " SELECT distinct(sup_id) "
-												+ "   FROM suppliers s, supplier_franchises sf "
-												+ "  WHERE S.SUP_ID = sf.sup_sup_id "
-												+ "    AND s.sup_id = sf.sup_sup_id "
-												+ "    AND supplier_category = 'PUR_DLR' "
-												+ "    AND sstc_service_type_code = 'DEALER' "
-												+ "    AND MAK_id in (select mak_id from makes where lower(make_desc) = '" + make.toLowerCase() + "' )"
-												+ "    AND inactive_ind = 'N' "
-												+ "    AND NOT EXISTS (SELECT 1 FROM WILLOW2K.potential_supplier WHERE  mak_mak_id = "+parentProviderId+" and ltrim(trim(make_code) , '0')  = ltrim(trim(sf.make_code) , '0')  and (NVL(ncv_batch, 'Y') = 'Y' OR NVL(cv_batch, 'Y') = 'Y')) " 
-												+ "    AND NOT EXISTS (SELECT 1 FROM supplier_franchises  WHERE sup_sup_id = s.sup_id  and mak_id NOT IN (select mak_id from makes where lower(make_desc) =  '" + make.toLowerCase() + "') ) "
-												+ "  )";
+					deleteQueryString = "DELETE FROM SUPPLIER_WORKSHOPS WHERE WORKSHOP_CAPABILITY= 'CD_DEALER' AND sup_sup_id IN ( "
+							+ " SELECT distinct(sup_id) "
+							+ "   FROM suppliers s, supplier_franchises sf "
+							+ "  WHERE S.SUP_ID = sf.sup_sup_id "
+							+ "    AND s.sup_id = sf.sup_sup_id "
+							+ "    AND MAK_id in (select mak_id from makes where lower(make_desc) = '" + make.toLowerCase() + "' )"
+							+ "    AND NOT EXISTS (SELECT 1 FROM WILLOW2K.potential_supplier WHERE  mak_mak_id = "+parentProviderId+" and ltrim(trim(make_code) , '0')  = ltrim(trim(sf.make_code) , '0')  and (NVL(ncv_batch, 'Y') = 'Y' OR NVL(cv_batch, 'Y') = 'Y')) " 
+							+ "  )";
 					
-					query = entityManager.createNativeQuery(updateQueryString);
-					query.executeUpdate();*/
+					query = entityManager.createNativeQuery(deleteQueryString);
+					query.executeUpdate();
 					
 					deleteQueryString = "DELETE FROM WILLOW2K.potential_supplier WHERE mak_mak_id = " + parentProviderId + " AND (supplier_exist_yn = 'Y' OR (ncv_batch = 'N' AND cv_batch = 'N'))";
 					
