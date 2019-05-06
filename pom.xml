@@ -4,15 +4,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mikealbert.processing</groupId>
   <artifactId>maintenance-interfaces</artifactId>
-  <version>1.4.1</version>
+  <version>1.4.2</version>
   <packaging>war</packaging>
   
   	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mafs.core.processing.version>1.2.0</mafs.core.processing.version>
 		<mafs.core.infra.version>1.2.0</mafs.core.infra.version>
-		<mafs.core.data.version>1.8.4</mafs.core.data.version>
-		<mafs.core.services.version>1.8.4</mafs.core.services.version>
+		<mafs.core.data.version>1.8.7</mafs.core.data.version>
+		<mafs.core.services.version>1.8.7</mafs.core.services.version>
 		<mafs.core.batch.version>1.3.0</mafs.core.batch.version>
 		<mafs.core.testing.version>1.1.0</mafs.core.testing.version> 
 	</properties>
